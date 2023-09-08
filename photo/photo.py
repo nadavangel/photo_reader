@@ -86,10 +86,14 @@ class Photo():
 			raise TypeError(f"Path \"{str(val)}\", is not a file.")
 		self._path = val
 
-	def copy(self, dest: Path, new_name:str = ""):
-		if new_name == "":
+	def copy(self, dest: Path, new_name:str = "", prefix : str = ""):
+		if new_name != "":
 			name = new_name
 		else:
 			name = self.path.stem
+			
+		if prefix != "":
+			name = prefix + "_" + name
+			
 		new_path = dest / name
 		shutil.copy(self.path, new_path)
