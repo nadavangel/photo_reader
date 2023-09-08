@@ -1,14 +1,14 @@
 import abc
 
 from photo.photo import Photo, WellPos
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 
 class MicroscopeException(Exception):
 	pass
 
 
-class Microscope(abc.ABC):
+class MicroscopeBase(abc.ABC):
 	_path: Path
 	_files_list: list[Path]
 	_pos_photo: dict[WellPos, list[Photo]]
@@ -25,17 +25,18 @@ class Microscope(abc.ABC):
 		pass
 	
 	def move(self, dest: Path | str):
-		self._match()
 		base_dest_dir = self.path_value(dest)
 		if not base_dest_dir.is_dir():
 			raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
 		dest_dir = base_dest_dir.absolute() / 'out'
 		dest_dir.mkdir(parents=True, exist_ok=False)
+		
+		self._match()
+		
 		for pos in self._pos_photo:
 			pos_dir = dest_dir / str(pos)
 			pos_dir.mkdir(parents=True, exist_ok=True)
 			for file in self._pos_photo[pos]:
-				print(f"{str(pos)}: {str(file.path)}")
 				file.copy(pos_dir)
 	
 	@property
@@ -46,7 +47,7 @@ class Microscope(abc.ABC):
 	def path_value(value: Path | str) -> Path:
 		if type(value) is str:
 			val = Path(value)
-		elif type(value) is Path:
+		elif type(value) is Path or type(value) is WindowsPath:
 			val = value
 		else:
 			raise TypeError("Path is not from type 'Path'")

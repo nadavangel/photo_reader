@@ -1,10 +1,10 @@
 import re
 from pathlib import Path
 
-from photo import Microscope, WellPos, Photo
+from photo import MicroscopeBase, WellPos, Photo
 
 
-class Eva(Microscope):
+class Eva(MicroscopeBase):
 	regEx_file_name = r"(?P<row>[A-Za-z]+)(?P<col>\d+)[-]*W(?P<well>\d+)[-]*P(?P<pos>\d+)[-]*Z(?P<z>\d+)[-]*T(?P<time>\d+)[-]*(?P<channel>\w+).tif"
 	
 	def __init__(self, folder: Path | str):

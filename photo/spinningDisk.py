@@ -1,11 +1,9 @@
 import re
 from pathlib import Path
-from photo.photo import WellPos, Photo
-
-from photo.microscope import Microscope, MicroscopeException
+from photo import MicroscopeBase, MicroscopeException, WellPos, Photo
 
 
-class SpinninDick(Microscope):
+class SpinninDick(MicroscopeBase):
 	_nd_files: list[Path]
 	regEx_nd = (r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$")
 	regEx_file_name = r"^(?P<batch>\w*)_.*_s(?P<stage>\d+).tif$"
