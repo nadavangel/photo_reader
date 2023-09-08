@@ -5,6 +5,6 @@ This code is for spliting Spining-Disc and Eva microspoct outputs to indvuals we
 1. Enter to the repo foldre
 2. run 
 ```
-pyinstaller --clean -F -i="microscope.ico" splitToWells.py 
+pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py 
 ```
 3. Create a new relase in GitHub 

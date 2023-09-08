@@ -5,9 +5,9 @@ block_cipher = None
 
 
 a = Analysis(
-    ['splitToWells.py'],
+    ['window.py'],
     pathex=[],
-    binaries=[],
+    binaries=[('microscope.ico', '.')],
     datas=[],
     hiddenimports=[],
     hookspath=[],

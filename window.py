@@ -70,7 +70,7 @@ def main() -> int:  # pragma: no cover
 	                    format='%(asctime)s %(levelname)-7s %(message)s')
 	window = Tk()
 	window.title("Split To Wells")
-	window.iconbitmap("microscope.ico")
+	# window.iconbitmap("microscope.ico")
 	
 	src_folder = FolderSelect(window, "Select source folder")
 	src_folder.grid(row=0)
