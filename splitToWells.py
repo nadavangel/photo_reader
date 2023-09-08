@@ -1,7 +1,7 @@
 import logging
 import sys
 import time
-from datetime import datetime
+from datetime import timedelta
 
 import photo
 from tkinter import filedialog
@@ -21,7 +21,8 @@ def main() -> int:  # pragma: no cover
 	                    format='%(asctime)s %(levelname)-7s %(message)s')
 	
 	if args.folder is None:
-		folder = filedialog.askdirectory(title="Select source flder")
+		print('Please select source (plate/Spinning disc) folder:')
+		folder = filedialog.askdirectory(title="Select source folder")
 	else:
 		folder = args.folder
 		
@@ -30,7 +31,8 @@ def main() -> int:  # pragma: no cover
 		return 0
 		
 	if args.dest is None:
-		dest = filedialog.askdirectory(title="Select destention flder")
+		print('Please destention folder:')
+		dest = filedialog.askdirectory(title="Select destention folder")
 	else:
 		dest = args.folder
 	
@@ -42,12 +44,14 @@ def main() -> int:  # pragma: no cover
 	mic = photo.Microscope(folder=folder)
 	dest = mic.move(dest)
 	end = time.time()
-	total_time = datetime.timedelta(seconds=end-start)
+	total_time = timedelta(seconds=end-start)
 	
 	logging.info(f"Done, it took {str(total_time)}, the files are at {str(dest)}")
-	return 1
+	return 0
 
 
 if __name__ == '__main__':
-	sys.exit(main())  # pragma: no cover
+	re = main()
+	input("Press Enter to exit")
+	sys.exit(re)
 	
