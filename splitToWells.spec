@@ -7,7 +7,7 @@ block_cipher = None
 a = Analysis(
     ['window.py'],
     pathex=[],
-    binaries=[('microscope.ico', '.')],
+    binaries=[],
     datas=[],
     hiddenimports=[],
     hookspath=[],
