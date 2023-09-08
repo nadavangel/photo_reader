@@ -1,9 +1,39 @@
+import logging
+import sys
+import time
+from datetime import datetime
+
 import photo
+from tkinter import filedialog
+import argparse
+import pathlib
 
-folder = r"C:\Users\nangel\Desktop\Mor\Spinning Disk\2023-9-7 N tag mini Pex Library H2O2 2mM again"
-# sp = photo.SpinninDick(folder=folder)
-# sp.move(folder)
+def main() -> int:  # pragma: no cover
 
-# folder = r"C:\Users\nangel\Desktop\Mor\2023-Sep-7 Screen minipex library C' H2O2 2mM\plate_001"
-mic = photo.Microscope(folder=folder)
-mic.move(folder)
+	
+	parser = argparse.ArgumentParser(prog="SplitToWells")
+	parser.add_argument("-f", "--folder", type=pathlib.Path)
+	parser.add_argument('-v', '--verbose', help='debug logs', action='store_const', const=logging.DEBUG,
+	                    default=logging.INFO)
+	args = parser.parse_args()
+	logging.basicConfig(stream=sys.stdout, level=args.verbose,
+	                    format='%(asctime)s %(levelname)-7s %(message)s')
+	
+	if args.folder is None:
+		folder = filedialog.askdirectory()
+	else:
+		folder = args.folder
+	
+	start = time.time()
+	mic = photo.Microscope(folder=folder)
+	dest = mic.move(folder)
+	end = time.time()
+	total_time = datetime.timedelta(seconds=end-start)
+	
+	logging.info(f"Done, it took {str(total_time)}, the files are at {str(dest)}")
+	return 1
+
+
+if __name__ == '__main__':
+	sys.exit(main())  # pragma: no cover
+	
