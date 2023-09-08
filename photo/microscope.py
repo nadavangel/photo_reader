@@ -3,8 +3,10 @@ import abc
 from photo.photo import Photo, WellPos
 from pathlib import Path
 
+
 class MicroscopeException(Exception):
 	pass
+
 
 class Microscope(abc.ABC):
 	_path: Path
@@ -14,7 +16,7 @@ class Microscope(abc.ABC):
 	def __init__(self, folder: Path | str):
 		self.path = folder
 		self._fill_files()
-		
+	
 	def _fill_files(self):
 		self._files_list = list(self.path.iterdir())
 	
@@ -52,6 +54,7 @@ class Microscope(abc.ABC):
 		if not val.is_dir():
 			raise TypeError(f"Path \"{str(val)}\", is not a dirctory.")
 		return val
+	
 	@path.setter
 	def path(self, value: Path | str):
 		self._path = self.path_value(value)

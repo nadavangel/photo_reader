@@ -8,7 +8,7 @@ from photo.microscope import Microscope, MicroscopeException
 class SpinninDick(Microscope):
 	_nd_files: list[Path]
 	regEx_nd = (r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$")
-	regEx_file_name = r"^(?P<batch>\w*)_.*_s(?P<stage>\d+).tif$$"
+	regEx_file_name = r"^(?P<batch>\w*)_.*_s(?P<stage>\d+).tif$"
 	
 	def __init__(self, folder: Path | str):
 		super().__init__(folder=folder)
