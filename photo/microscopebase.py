@@ -30,7 +30,7 @@ class MicroscopeBase(abc.ABC):
 		if not base_dest_dir.is_dir():
 			raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
 		dest_dir = base_dest_dir.absolute() / 'out'
-		dest_dir.mkdir(parents=True, exist_ok=False)
+		dest_dir.mkdir(parents=True, exist_ok=True)
 		logging.info(f"Create {str(dest_dir)}")
 		self._match()
 		
