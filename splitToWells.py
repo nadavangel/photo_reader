@@ -24,6 +24,9 @@ def main() -> int:  # pragma: no cover
 	else:
 		folder = args.folder
 	
+	if folder is None or folder == "":
+		logging.info("No folder was selected")
+		return 0
 	start = time.time()
 	mic = photo.Microscope(folder=folder)
 	dest = mic.move(folder)
