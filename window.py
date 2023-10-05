@@ -22,7 +22,7 @@ class FolderSelect(Frame):
 		self.btnFind.grid(row=0, column=2)
 	
 	def setFolderPath(self):
-		folder_selected = filedialog.askdirectory(parent = self._parent, initialdir=self.folder_path)
+		folder_selected = filedialog.askdirectory(parent=self._parent, initialdir=self.folder_path)
 		if folder_selected:
 			self.folderPath.set(folder_selected)
 	
@@ -43,34 +43,46 @@ class Input(Frame):
 	def value(self):
 		return self.entPath.get()
 
+
 class App(Tk):
 	def __init__(self):
 		super().__init__()
 		self.resizable(0, 0)
-
+		self._row = 0
 		self.src_folder = FolderSelect(self, "Select source folder")
-		self.src_folder.grid(row=0)
+		self.src_folder.grid(row=self._row)
+		self._row += 1
 		
 		self.dest_folder = FolderSelect(self, "Select destention folder")
-		self.dest_folder.grid(row=1)
+		self.dest_folder.grid(row=self._row)
+		self._row += 1
 		
 		self.name = Input(self, "Name")
-		self.name.grid(row=2)
+		self.name.grid(row=self._row)
+		self._row += 1
 		
-		self.progressbar = Progressbar(self, orient='horizontal', mode='indeterminate', length=200)
+		self.createSubdirValue = BooleanVar()
+		self.createSubdirCheckbox = Checkbutton(self, text='Create subdir', variable=self.createSubdirValue,
+		                                        onvalue=True, offvalue=False)
+		self.createSubdirCheckbox.select()
+		self.createSubdirCheckbox.grid(row=self._row)
+		self._row += 1
 		
 		self.btnRun = Button(self, text="Run", command=self.run)
-		self.btnRun.grid(row=3)
+		self.btnRun.grid(row=self._row)
+		self._row += 1
 		
 		self.label = Label(self, text='')
-		self.label.grid(row=4)
+		self.label.grid(row=self._row)
+		self._row += 1
 		
+		self.progressbar = Progressbar(self, orient='horizontal', mode='indeterminate', length=200)
 		self.progressbar.grid_forget()
 	
 	def run(self):
 		src = self.src_folder.folderPath.get()
 		dst = self.dest_folder.folderPath.get()
-		name=self.name.value
+		name = self.name.value
 		
 		if src is None:
 			print('Please select source (plate/Spinning disc) folder:')
@@ -89,10 +101,15 @@ class App(Tk):
 		
 		if dest is None or dest == "":
 			raise Exception("No destention folder was selected")
-
+		
 		mic = photo.Microscope(folder=folder)
 		self.start_run()
-		run_thread = threading.Thread(target=mic.move, kwargs={'dest': dest, "prefix": name})
+		run_thread = threading.Thread(target=mic.move,
+		                              kwargs={
+			                              'dest': dest,
+			                              "prefix": name,
+			                              "create_dubdir": self.createSubdirValue.get()
+		                              })
 		run_thread.start()
 		
 		self.monitor(run_thread=run_thread)
@@ -100,7 +117,7 @@ class App(Tk):
 		return 0
 	
 	def start_run(self):
-		self.progressbar.grid(row=5)
+		self.progressbar.grid(row=self._row)
 		self.progressbar.start(20)
 		self.btnRun.config(state=DISABLED)
 	
@@ -109,13 +126,13 @@ class App(Tk):
 		self.progressbar.grid_forget()
 		self.btnRun.config(state=NORMAL)
 		messagebox.showinfo(title="Done", message="Done")
-		
+	
 	def monitor(self, run_thread):
 		if run_thread.is_alive():
 			self.after(100, lambda: self.monitor(run_thread))
 		else:
 			self.stop_run()
-	
+
 
 def main() -> int:  # pragma: no cover
 	logging.basicConfig(stream=sys.stdout, level=logging.INFO,
@@ -123,8 +140,9 @@ def main() -> int:  # pragma: no cover
 	window = App()
 	window.title("Split To Wells")
 	# window.iconbitmap("microscope.ico")
-
+	
 	window.mainloop()
+
 
 if __name__ == '__main__':
 	re = main()

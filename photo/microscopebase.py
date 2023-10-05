@@ -25,7 +25,7 @@ class MicroscopeBase(abc.ABC):
 	def _match(self):
 		pass
 	
-	def move(self, dest: Path | str, prefix : str = ""):
+	def move(self, dest: Path | str, prefix : str = "", create_dubdir:bool = True):
 		base_dest_dir = self.path_value(dest)
 		if not base_dest_dir.is_dir():
 			raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
@@ -35,11 +35,17 @@ class MicroscopeBase(abc.ABC):
 		self._match()
 		
 		for pos in self._pos_photo:
-			pos_dir = dest_dir / str(pos)
-			pos_dir.mkdir(parents=True, exist_ok=True)
-			logging.debug(f"Create {str(pos_dir)}")
+			if create_dubdir:
+				pos_dir = dest_dir / str(pos)
+				pos_dir.mkdir(parents=True, exist_ok=True)
+				logging.debug(f"Create {str(pos_dir)}")
+				pos_prefix = prefix
+			else:
+				pos_dir = dest_dir
+				pos_prefix = f"{str(pos)}_{prefix}"
+				
 			for file in self._pos_photo[pos]:
-				file.copy(pos_dir, prefix=prefix)
+				file.copy(pos_dir, prefix=pos_prefix)
 				logging.info(f"Copy {str(file.path.name)} to {str(pos)}")
 		return dest_dir
 	
