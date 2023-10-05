@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from photo import MicroscopeBase, MicroscopeException, WellPos, Photo
+from photo import MicroscopeBase, MicroscopeException, WellPos, Photo, WellName
 
 
 class SpinninDick(MicroscopeBase):
@@ -21,12 +21,15 @@ class SpinninDick(MicroscopeBase):
 			self._files_list.remove(file)
 	
 	@staticmethod
-	def _parse_line(line: str):
+	def _parse_line(line: str, pos_names: WellName | None = None):
 		reg = re.match(SpinninDick.regEx_nd, string=line)
 		if reg is None:
 			return (False, -1, None)
 		di = reg.groupdict()
 		pos = WellPos(row=di["row"], col=int(di["column"]), site=int(di["site"]))
+		pos_str = f"{pos.row.upper()}{pos.col}"
+		if pos_names is not None and pos_str in pos_names:
+			pos.name = pos_names[pos_str]
 		return (True, int(di["stage"]), pos)
 	
 	@staticmethod
@@ -37,7 +40,7 @@ class SpinninDick(MicroscopeBase):
 		di = reg.groupdict()
 		return (True, int(di["stage"]), di['batch'])
 	
-	def _match(self):
+	def _match(self, pos_names: WellName | None = None):
 		stage_dict = {}
 		self._pos_photo = {}
 		for nd_file in self._nd_files:
@@ -48,7 +51,7 @@ class SpinninDick(MicroscopeBase):
 					if not raw_line:
 						break
 					line = raw_line.strip()
-					suc, stage, pos = self._parse_line(line)
+					suc, stage, pos = self._parse_line(line, pos_names=pos_names)
 					if suc:
 						batch[stage] = pos
 			stage_dict[nd_file.stem] = batch

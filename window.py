@@ -3,10 +3,11 @@ import sys
 import threading
 from tkinter import *
 from tkinter import filedialog, messagebox
+from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Progressbar
-import tkinter.ttk
 
 import photo
+from photo import WellNameTxt
 
 
 class FolderSelect(Frame):
@@ -29,6 +30,22 @@ class FolderSelect(Frame):
 	@property
 	def folder_path(self):
 		return self.folderPath.get()
+
+
+class Multitext(Frame):
+	def __init__(self, parent=None, title="", **kw):
+		Frame.__init__(self, master=parent, **kw)
+		self._parent = parent
+		self.folderPath = StringVar()
+		self.lblName = Label(self, text=title)
+		self.lblName.grid(row=0, column=0)
+		
+		self.text = ScrolledText(self, wrap=WORD, **kw)
+		self.text.grid(row=0, column=1)
+	
+	@property
+	def value(self):
+		return self.text.get("1.0", END)
 
 
 class Input(Frame):
@@ -59,6 +76,10 @@ class App(Tk):
 		
 		self.name = Input(self, "Name")
 		self.name.grid(row=self._row)
+		self._row += 1
+		
+		self.material = Multitext(self, title="Material info", width=20, height=3)
+		self.material.grid(row=self._row)
 		self._row += 1
 		
 		self.createSubdirValue = BooleanVar()
@@ -102,14 +123,20 @@ class App(Tk):
 		if dest is None or dest == "":
 			raise Exception("No destention folder was selected")
 		
+		well_name = None
+		if self.material.value != "":
+			well_name = WellNameTxt(buff=self.material.value)
+		
 		mic = photo.Microscope(folder=folder)
 		self.start_run()
 		run_thread = threading.Thread(target=mic.move,
 		                              kwargs={
 			                              'dest': dest,
 			                              "prefix": name,
-			                              "create_dubdir": self.createSubdirValue.get()
+			                              "create_dubdir": self.createSubdirValue.get(),
+			                              "pos_names": well_name
 		                              })
+		run_thread.daemon = True
 		run_thread.start()
 		
 		self.monitor(run_thread=run_thread)

@@ -1,37 +1,7 @@
 import shutil
-from dataclasses import dataclass, field
 from pathlib import Path
 
-
-@dataclass
-class WellPos():
-	row: str  # A-P
-	col: int
-	site: int
-	name: str = field(default="")
-	
-	@classmethod
-	def create(cls, pos: tuple):
-		if type(pos) is not tuple:
-			raise TypeError("Pos is not tuple")
-		if len(pos) == 3:
-			site = pos[2]
-		else:
-			site = 1
-		return cls(row=pos[0], col=pos[1], site=site)
-	
-	def samePos(self, other):
-		return self.row == other.row and self.col == other.col
-	
-	def __hash__(self):
-		return hash(f"{self.row}{self.col}{self.site}{self.name}")
-	
-	def __str__(self) -> str:
-		if self.name != "":
-			name = self.name + "_"
-		else:
-			name = self.name
-		return f"{name}{self.row}{self.col:02}"
+from photo.wells import WellPos
 
 
 class Photo():

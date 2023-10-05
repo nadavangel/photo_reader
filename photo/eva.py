@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from photo import MicroscopeBase, WellPos, Photo
+from photo import MicroscopeBase, WellPos, Photo, WellName
 
 
 class Eva(MicroscopeBase):
@@ -12,22 +12,26 @@ class Eva(MicroscopeBase):
 		super().__init__(folder=data_folder)
 	
 	@staticmethod
-	def _parse_file_name(line: str):
+	def _parse_file_name(line: str, pos_names: WellName | None = None):
 		reg = re.match(Eva.regEx_file_name, string=line)
 		if reg is None:
 			return (False, None)
 		di = reg.groupdict()
 		pos = WellPos(row=di["row"], col=int(di["col"]), site=int(di["pos"]))
+		pos_str = f"{pos.row.upper()}{pos.col}"
+		if pos_names is not None and pos_str in pos_names:
+			pos.name = pos_names[pos_str]
+			
 		return (True, pos)
 	
-	def _match(self):
+	def _match(self, pos_names: WellName | None = None):
 		self._pos_photo = {}
 		
 		for file in self._files_list:
 			if not file.is_file():
 				continue
 			file_name = file.name.strip()
-			suc, pos = self._parse_file_name(file_name)
+			suc, pos = self._parse_file_name(file_name, pos_names=pos_names)
 			if suc:
 				pic = Photo(path=file, pos=pos)
 				if pos not in self._pos_photo:

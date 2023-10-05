@@ -1,7 +1,8 @@
 import abc
 import logging
 
-from photo.photo import Photo, WellPos
+from photo.photo import Photo
+from photo.wells import WellPos, WellName
 from pathlib import Path, WindowsPath
 
 
@@ -22,17 +23,17 @@ class MicroscopeBase(abc.ABC):
 		self._files_list = list(self.path.iterdir())
 	
 	@abc.abstractmethod
-	def _match(self):
+	def _match(self, pos_names: WellName | None = None):
 		pass
 	
-	def move(self, dest: Path | str, prefix : str = "", create_dubdir:bool = True):
+	def move(self, dest: Path | str, prefix : str = "", create_dubdir:bool = True, pos_names: WellName | None = None):
 		base_dest_dir = self.path_value(dest)
 		if not base_dest_dir.is_dir():
 			raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
 		dest_dir = base_dest_dir.absolute() / 'out'
 		dest_dir.mkdir(parents=True, exist_ok=True)
 		logging.info(f"Create {str(dest_dir)}")
-		self._match()
+		self._match(pos_names)
 		
 		for pos in self._pos_photo:
 			if create_dubdir:
