@@ -1,4 +1,4 @@
-from photo import Eva, MicroscopeBase, SpinninDick
+from photo import Eva, MicroscopeBase, SpinningDisk
 
 
 class Microscope():
@@ -8,6 +8,6 @@ class Microscope():
 		if data_dir.is_dir():
 			cls = Eva
 		else:
-			cls = SpinninDick
+			cls = SpinningDisk
 			
 		return cls(folder=folder)

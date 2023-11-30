@@ -3,10 +3,10 @@ from pathlib import Path
 from photo import MicroscopeBase, MicroscopeException, WellPos, Photo, WellName
 
 
-class SpinninDick(MicroscopeBase):
+class SpinningDisk(MicroscopeBase):
 	_nd_files: list[Path]
 	regEx_nd = (r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$")
-	regEx_file_name = r"^(?P<batch>\w*)_.*_s(?P<stage>\d+).tif$"
+	regEx_file_name = r"^(?P<batch>[\w\-\_]*)_.*_s(?P<stage>\d+).tif$"
 	
 	def __init__(self, folder: Path | str):
 		super().__init__(folder=folder)
@@ -22,7 +22,7 @@ class SpinninDick(MicroscopeBase):
 	
 	@staticmethod
 	def _parse_line(line: str, pos_names: WellName | None = None):
-		reg = re.match(SpinninDick.regEx_nd, string=line)
+		reg = re.match(SpinningDisk.regEx_nd, string=line)
 		if reg is None:
 			return (False, -1, None)
 		di = reg.groupdict()
@@ -34,7 +34,7 @@ class SpinninDick(MicroscopeBase):
 	
 	@staticmethod
 	def _parse_file_name(line: str):
-		reg = re.match(SpinninDick.regEx_file_name, string=line)
+		reg = re.match(SpinningDisk.regEx_file_name, string=line)
 		if reg is None:
 			return (False, -1, None)
 		di = reg.groupdict()
