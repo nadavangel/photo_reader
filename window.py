@@ -70,7 +70,7 @@ class App(Tk):
 		self.src_folder.grid(row=self._row)
 		self._row += 1
 		
-		self.dest_folder = FolderSelect(self, "Select destention folder")
+		self.dest_folder = FolderSelect(self, "Select destination folder")
 		self.dest_folder.grid(row=self._row)
 		self._row += 1
 		
