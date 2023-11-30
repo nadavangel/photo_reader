@@ -115,13 +115,13 @@ class App(Tk):
 			raise Exception("No source folder was selected")
 		
 		if dst is None:
-			print('Please destention folder:')
-			dest = filedialog.askdirectory(title="Select destention folder")
+			print('Please select destination folder:')
+			dest = filedialog.askdirectory(title="Select destination folder")
 		else:
 			dest = dst
 		
 		if dest is None or dest == "":
-			raise Exception("No destention folder was selected")
+			raise Exception("No destination folder was selected")
 		
 		well_name = None
 		if self.material.value != "":
