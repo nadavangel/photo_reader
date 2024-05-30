@@ -66,4 +66,4 @@ class Photo():
 			name = prefix + "_" + name
 			
 		new_path = dest / name
-		shutil.copy(self.path, new_path)
+		shutil.copy2(self.path, new_path)
