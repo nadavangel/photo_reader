@@ -46,6 +46,20 @@ class Multitext(Frame):
 	@property
 	def value(self):
 		return self.text.get("1.0", END)
+	
+	@staticmethod
+	def selectAllOperation(event, textWidget):
+		if (isinstance(textWidget, ScrolledText)):
+			lines = textWidget.get("1.0", "end").split('\n')
+			lines.pop()
+		else:
+			event.widget.event_generate("<<SelectAll>>")
+			return "break"
+		
+		textWidget.tag_remove(SEL, '1.0', 'end')
+		for idx, line in enumerate(lines):
+			textWidget.tag_add(SEL, f'{idx+1}.0', f'{idx+1}.{len(line)}')
+		
 
 
 class Input(Frame):
@@ -99,7 +113,28 @@ class App(Tk):
 		
 		self.progressbar = Progressbar(self, orient='horizontal', mode='indeterminate', length=200)
 		self.progressbar.grid_forget()
+		
+		self.bind_all("<Key>", self._onKeyRelease, "+")
 	
+	@staticmethod
+	def _onKeyRelease(event):
+		ctrl = (event.state & 0x4) != 0
+		if event.keycode == 88 and ctrl and event.keysym.lower() != "x":
+			event.widget.event_generate("<<Cut>>")
+			return "break"
+		
+		if event.keycode == 86 and ctrl and event.keysym.lower() != "v":
+			event.widget.event_generate("<<Paste>>")
+			return "break"
+		
+		if event.keycode == 67 and ctrl and event.keysym.lower() != "c":
+			event.widget.event_generate("<<Copy>>")
+			return "break"
+		
+		if (event.keycode == 65 and ctrl):  # ctrl+a
+			Multitext.selectAllOperation(event=event, textWidget=event.widget)
+			return "break"
+			
 	def run(self):
 		src = self.src_folder.folderPath.get()
 		dst = self.dest_folder.folderPath.get()
