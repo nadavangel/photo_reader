@@ -1,11 +1,10 @@
 import abc
-import logging
 
 from photo.photo import Photo
 from photo.wells import WellPos, WellName
 from pathlib import Path, WindowsPath
-
-
+import logging
+logger = logging.getLogger("mylSplitToWells")
 class MicroscopeException(Exception):
 	pass
 
@@ -26,28 +25,36 @@ class MicroscopeBase(abc.ABC):
 	def _match(self, pos_names: WellName | None = None):
 		pass
 	
-	def move(self, dest: Path | str, prefix : str = "", create_dubdir:bool = True, pos_names: WellName | None = None):
+	def move(self, dest: Path | str, prefix : str = "", create_dubdir:bool = True, pos_names: WellName | None = None, file_prefix: str = ""):
 		base_dest_dir = self.path_value(dest)
 		if not base_dest_dir.is_dir():
 			raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
 		dest_dir = base_dest_dir.absolute() / 'out'
 		dest_dir.mkdir(parents=True, exist_ok=True)
-		logging.info(f"Create {str(dest_dir)}")
-		self._match(pos_names)
+		logger.info(f"Create {str(dest_dir)}")
+		skipped_files = self._match(pos_names)
 		
 		for pos in self._pos_photo:
 			if create_dubdir:
 				pos_dir = dest_dir / str(pos)
 				pos_dir.mkdir(parents=True, exist_ok=True)
-				logging.debug(f"Create {str(pos_dir)}")
+				logger.debug(f"Create {str(pos_dir)}")
 				pos_prefix = prefix
 			else:
 				pos_dir = dest_dir
 				pos_prefix = f"{str(pos)}_{prefix}"
+
+			if file_prefix:
+				pos_prefix = f"{file_prefix}_{pos_prefix}"
 				
 			for file in self._pos_photo[pos]:
 				file.copy(pos_dir, prefix=pos_prefix)
-				logging.info(f"Copy {str(file.path.name)} to {str(pos)}")
+				logger.info(f"Copy \"{str(file.path.name)}\" to {str(pos)}")
+		
+		if len(skipped_files) > 0:
+			skipped_files_names = ', '.join([file.name for file in skipped_files])
+			logger.warning(f"Skipped {len(skipped_files)} file{'s' if len(skipped_files) > 1 else ''}: {skipped_files_names}")
+
 		return dest_dir
 	
 	@property

@@ -1,4 +1,5 @@
 import logging
+from logging import FileHandler
 import sys
 import threading
 from tkinter import *
@@ -8,8 +9,9 @@ from tkinter.ttk import Progressbar
 
 import photo
 from photo import WellNameTxt
+import subprocess
 
-
+logger = logging.getLogger("mylSplitToWells")
 class FolderSelect(Frame):
 	def __init__(self, parent=None, folderDescription="", **kw):
 		Frame.__init__(self, master=parent, **kw)
@@ -99,8 +101,12 @@ class App(Tk):
 		self.createSubdirValue = BooleanVar()
 		self.createSubdirCheckbox = Checkbutton(self, text='Create subdir', variable=self.createSubdirValue,
 		                                        onvalue=True, offvalue=False)
-		self.createSubdirCheckbox.select()
+		#self.createSubdirCheckbox.select()
 		self.createSubdirCheckbox.grid(row=self._row)
+		self._row += 1
+
+		self.file_prefix = Input(self, "File prefix")
+		self.file_prefix.grid(row=self._row)
 		self._row += 1
 		
 		self.btnRun = Button(self, text="Run", command=self.run)
@@ -139,6 +145,7 @@ class App(Tk):
 		src = self.src_folder.folderPath.get()
 		dst = self.dest_folder.folderPath.get()
 		name = self.name.value
+		file_prefix = self.file_prefix.value
 		
 		if src is None:
 			print('Please select source (plate/Spinning disc) folder:')
@@ -169,7 +176,8 @@ class App(Tk):
 			                              'dest': dest,
 			                              "prefix": name,
 			                              "create_dubdir": self.createSubdirValue.get(),
-			                              "pos_names": well_name
+			                              "pos_names": well_name,
+										  "file_prefix": file_prefix
 		                              })
 		run_thread.daemon = True
 		run_thread.start()
@@ -197,12 +205,31 @@ class App(Tk):
 
 
 def main() -> int:  # pragma: no cover
-	logging.basicConfig(stream=sys.stdout, level=logging.INFO,
-	                    format='%(asctime)s %(levelname)-7s %(message)s')
+	formatter_stdot = logging.Formatter(
+		'%(asctime)s %(levelname)-7s %(message)s')
+	formatter_file = logging.Formatter(
+		'%(asctime)s.%(msecs)03d %(levelname)-7s [%(funcName)-20s] [%(filename)25s:%(lineno)-4d] %(message)s',
+		datefmt ='%d/%m/%Y %H:%M:%S')
+	logger.setLevel(logging.DEBUG)
+
+	stream_handler = logging.StreamHandler()
+	stream_handler.setLevel(logging.INFO)
+	stream_handler.setFormatter(formatter_stdot)
+
+	logFilePath = "SplitToWells.log"
+	file_handler = FileHandler(logFilePath, encoding='utf-8',mode='w')
+	file_handler.setFormatter(formatter_file)
+	file_handler.setLevel(logging.DEBUG)
+
+	logger.addHandler(file_handler)
+	logger.addHandler(stream_handler)
+
+						
 	window = App()
 	window.title("Split To Wells")
 	# window.iconbitmap("microscope.ico")
 	
+	logger.info("Starting SplitToWells")
 	window.mainloop()
 
 

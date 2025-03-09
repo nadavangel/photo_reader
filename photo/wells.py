@@ -2,6 +2,8 @@ import abc
 from dataclasses import field, dataclass
 from pathlib import Path, WindowsPath
 
+import logging
+logger = logging.getLogger("mylSplitToWells")
 
 @dataclass
 class WellPos():

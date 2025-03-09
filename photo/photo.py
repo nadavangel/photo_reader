@@ -2,8 +2,8 @@ import shutil
 from pathlib import Path
 
 from photo.wells import WellPos
-
-
+import logging
+logger = logging.getLogger("mylSplitToWells")
 class Photo():
 	_well: WellPos
 	_name: str
@@ -14,6 +14,7 @@ class Photo():
 			self.pos = pos
 		
 		self._path = path
+		logger.debug(f"Photo initialized with path: {path} and pos: {pos}")
 	
 	@property
 	def pos(self):
@@ -27,9 +28,11 @@ class Photo():
 			self._well = pos
 		else:
 			raise TypeError("pos is not a WellPos or tuple")
+		logger.debug(f"Position set to: {self._well}")
 	
 	def set_well(self, row: str, col: int, site=1):
 		self._well = WellPos(row=row, col=col, site=site)
+		logger.debug(f"Well set to: {self._well}")
 	
 	@property
 	def name(self):
@@ -38,6 +41,7 @@ class Photo():
 	@name.setter
 	def name(self, value: str):
 		self._name = value
+		logger.debug(f"Name set to: {self._name}")
 	
 	@property
 	def path(self):
@@ -55,6 +59,7 @@ class Photo():
 		if not val.is_file():
 			raise TypeError(f"Path \"{str(val)}\", is not a file.")
 		self._path = val
+		logger.debug(f"Path set to: {self._path}")
 
 	def copy(self, dest: Path, new_name:str = "", prefix : str = ""):
 		if new_name != "":
@@ -65,5 +70,6 @@ class Photo():
 		if prefix != "":
 			name = prefix + "_" + name
 			
-		new_path = dest / name
+		new_path = dest / f"{name}{self.path.suffix}"
 		shutil.copy2(self.path, new_path)
+		logger.info(f"Copied file to: \"{new_path}\"")

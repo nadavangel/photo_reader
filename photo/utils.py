@@ -1,5 +1,6 @@
 from photo import Eva, MicroscopeBase, SpinningDisk
-
+import logging
+logger = logging.getLogger("mylSplitToWells")
 
 class Microscope():
 	def __new__(cls, *args, **kwargs):
