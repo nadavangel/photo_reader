@@ -8,7 +8,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Progressbar
 
 import photo
-from photo import WellNameTxt
+from photo import WellNameTxt, MicroscopeException, get_exception_location
 import subprocess
 import configparser
 
@@ -167,8 +167,9 @@ class App(Tk):
 			folder = src
 		
 		if folder is None or folder == "":
-			raise Exception("No source folder was selected")
-		
+			logger.error("No source folder was selected")
+			return
+
 		if dst is None:
 			print('Please select destination folder:')
 			dest = filedialog.askdirectory(title="Select destination folder")
@@ -176,13 +177,24 @@ class App(Tk):
 			dest = dst
 		
 		if dest is None or dest == "":
-			raise Exception("No destination folder was selected")
+			logger.error("No destination folder was selected")
+			return
 		
 		well_name = None
 		if self.material.value != "":
 			well_name = WellNameTxt(buff=self.material.value)
 		
-		mic = photo.Microscope(folder=folder)
+		try:
+			mic = photo.Microscope(folder=folder)
+		except MicroscopeException as e:
+			ex_file, ex_line = get_exception_location()
+			logger.error(f"Error occurred while initializing microscope : \"{e}\" (at {ex_file}:{ex_line})")
+			return
+		except TypeError as e:
+			ex_file, ex_line = get_exception_location()
+			logger.error(f"Type error occurred while initializing microscope: \"{e}\" (at {ex_file}:{ex_line})")
+			return
+
 		self.start_run()
 		run_thread = threading.Thread(target=mic.move,
 		                              kwargs={
