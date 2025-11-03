@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+import re
 
 from photo.wells import WellPos
 import logging
@@ -70,6 +71,26 @@ class Photo():
 		if prefix != "":
 			name = prefix + "_" + name
 			
-		new_path = dest / f"{name}{self.path.suffix}"
+		full_name = sanitize_path(f"{name}{self.path.suffix}")
+		new_path = dest / full_name
 		shutil.copy2(self.path, new_path)
 		logger.info(f"Copied file to: \"{new_path}\"")
+
+def sanitize_path(path:str) -> str:
+	"""
+	Sanitize a file path by replacing invalid characters with underscores. For Windows file systems.
+	:param path: The file path to sanitize.
+	:return: The sanitized file path.
+	"""
+	# Forbidden characters in Windows
+	forbidden = r'[<>:"/\\|?*]'
+	sanitized = re.sub(forbidden, '_', path)
+	# Remove trailing spaces and dots
+	sanitized = re.sub(r'[\s.]+$', '_', sanitized)
+	# Reserved names (CON, PRN, AUX, NUL, COM1-9, LPT1-9)
+	reserved = re.compile(r'^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$', re.IGNORECASE)
+	if reserved.match(sanitized):
+		sanitized += '_'
+	if sanitized != path:
+		print(f"Warning: Invalid characters found in path '{path}'. Replacing with '_'.")
+	return sanitized
