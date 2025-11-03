@@ -10,13 +10,17 @@ from tkinter.ttk import Progressbar
 import photo
 from photo import WellNameTxt
 import subprocess
+import configparser
+
+DEFAULT_CONFIG_FILE = ".config.ini"
 
 logger = logging.getLogger("mylSplitToWells")
 class FolderSelect(Frame):
-	def __init__(self, parent=None, folderDescription="", **kw):
+	def __init__(self, parent=None, folderDescription="", path: str = "", **kw):
 		Frame.__init__(self, master=parent, **kw)
 		self._parent = parent
 		self.folderPath = StringVar()
+		self.folderPath.set(path)
 		self.lblName = Label(self, text=folderDescription)
 		self.lblName.grid(row=0, column=0)
 		self.entPath = Entry(self, textvariable=self.folderPath)
@@ -78,15 +82,19 @@ class Input(Frame):
 
 
 class App(Tk):
-	def __init__(self):
+	def __init__(self, cfg: configparser.ConfigParser = None):
 		super().__init__()
 		self.resizable(0, 0)
+		self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
 		self._row = 0
-		self.src_folder = FolderSelect(self, "Select source folder")
+		self._cfg = cfg
+		
+		self.src_folder = FolderSelect(self, "Select source folder", path=self._cfg.get('Settings', 'src_folder', fallback=''))
 		self.src_folder.grid(row=self._row)
 		self._row += 1
-		
-		self.dest_folder = FolderSelect(self, "Select destination folder")
+
+		self.dest_folder = FolderSelect(self, "Select destination folder", path=self._cfg.get('Settings', 'dest_folder', fallback=''))
 		self.dest_folder.grid(row=self._row)
 		self._row += 1
 		
@@ -101,7 +109,12 @@ class App(Tk):
 		self.createSubdirValue = BooleanVar()
 		self.createSubdirCheckbox = Checkbutton(self, text='Create subdir', variable=self.createSubdirValue,
 		                                        onvalue=True, offvalue=False)
-		#self.createSubdirCheckbox.select()
+		if self._cfg.has_option('Settings', 'create_subdir'):
+			create_subdir = self._cfg.getboolean('Settings', 'create_subdir', fallback=True)
+			if create_subdir:
+				self.createSubdirCheckbox.select()
+			else:
+				self.createSubdirCheckbox.deselect()
 		self.createSubdirCheckbox.grid(row=self._row)
 		self._row += 1
 
@@ -203,6 +216,38 @@ class App(Tk):
 		else:
 			self.stop_run()
 
+	def _save_configuration(self) -> None:
+		if 'Settings' not in self._cfg:
+			self._cfg['Settings'] = {}
+		self._cfg['Settings']['src_folder'] = self.src_folder.folder_path
+		self._cfg['Settings']['dest_folder'] = self.dest_folder.folder_path
+		self._cfg['Settings']['file_prefix'] = self.file_prefix.value
+		self._cfg['Settings']['name'] = self.name.value
+		self._cfg['Settings']['create_subdir'] = str(self.createSubdirValue.get()) # Boolean value
+		self._cfg['Settings']['well_name'] = self.material.value # Multitext value
+
+		save_cfg(DEFAULT_CONFIG_FILE, self._cfg)
+
+	def on_closing(self):
+		logger.info("Closing application")
+		self._save_configuration()
+		self.destroy()
+	
+
+def create_and_read_cfg(path: str) -> configparser.ConfigParser:
+	config = configparser.ConfigParser()
+	try:
+		with open(path, 'r', encoding='utf-8') as cfgfile:
+			config.read_file(cfgfile)
+			logger.debug(f"Configuration loaded from {path}")
+	except FileNotFoundError:
+		logger.warning(f"Configuration file {path} not found. Creating default configuration.")
+	return config
+
+def save_cfg(path: str, config: configparser.ConfigParser) -> None:
+	with open(path, 'w', encoding='utf-8') as cfgfile:
+		config.write(cfgfile)
+		logger.debug(f"Configuration saved to {path}")
 
 def main() -> int:  # pragma: no cover
 	formatter_stdot = logging.Formatter(
@@ -223,9 +268,9 @@ def main() -> int:  # pragma: no cover
 
 	logger.addHandler(file_handler)
 	logger.addHandler(stream_handler)
-
+	config = create_and_read_cfg(DEFAULT_CONFIG_FILE)
 						
-	window = App()
+	window = App(cfg=config)
 	window.title("Split To Wells")
 	# window.iconbitmap("microscope.ico")
 	
