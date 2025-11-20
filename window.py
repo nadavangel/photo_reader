@@ -11,6 +11,7 @@ import photo
 from photo import WellNameTxt, MicroscopeException, get_exception_location
 import subprocess
 import configparser
+import datetime
 
 DEFAULT_CONFIG_FILE = ".config.ini"
 
@@ -257,9 +258,14 @@ def create_and_read_cfg(path: str) -> configparser.ConfigParser:
 	return config
 
 def save_cfg(path: str, config: configparser.ConfigParser) -> None:
-	with open(path, 'w', encoding='utf-8') as cfgfile:
-		config.write(cfgfile)
-		logger.debug(f"Configuration saved to {path}")
+	config['Meta'] = {'Update time': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+	try:
+		with open(path, 'w', encoding='utf-8') as cfgfile:
+			config.write(cfgfile)
+			logger.debug(f"Configuration saved to '{path}', contents:\n{config}")
+	except Exception as e:
+		ex_file, ex_line = get_exception_location()
+		logger.error(f"Error occurred while saving configuration to '{path}': {e} (at {ex_file}:{ex_line})")
 
 def main() -> int:  # pragma: no cover
 	formatter_stdot = logging.Formatter(
