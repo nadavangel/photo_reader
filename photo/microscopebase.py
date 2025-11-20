@@ -40,7 +40,7 @@ class MicroscopeBase(abc.ABC):
 	def _match(self, pos_names: WellName | None = None):
 		pass
 	
-	def _move(self, *args, **kwargs):
+	def move(self, *args, **kwargs):
 		try:
 			return self._move(*args, **kwargs)
 		except MicroscopeException as e:
