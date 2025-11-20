@@ -8,7 +8,7 @@ logger = logging.getLogger("mylSplitToWells")
 class SpinningDisk(MicroscopeBase):
 	_nd_files: list[Path]
 	regEx_nd = (r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$")
-	regEx_file_name = r"^(?P<batch>[\w\-\_]*)_.*_s(?P<stage>\d+).*\.(tif|stk)$"
+	regEx_file_name = r"^(?P<batch>[\w\s\-\_]*)_.*_s(?P<stage>\d+).*\.(tif|stk)$"
 	
 	def __init__(self, folder: Path | str):
 		logger.debug(f"Initializing SpinningDisk with folder: {folder}")
@@ -50,7 +50,12 @@ class SpinningDisk(MicroscopeBase):
 			return (False, -1, None)
 		di = reg.groupdict()
 		logger.debug(f"Parsed file name: batch={di['batch']}, stage={di['stage']}")
-		return (True, int(di["stage"]), di['batch'])
+		parsed_successfully = True
+		if 'stage' not in di or di['stage'] is None or not di['stage'].isdigit():
+			parsed_successfully = False
+		if 'batch' not in di or di['batch'] is None or di['batch'] == "":
+			parsed_successfully = False
+		return (parsed_successfully, int(di["stage"]), di['batch'])
 	
 	def _match(self, pos_names: WellName | None = None):
 		logger.info("Matching positions with photos")
@@ -78,11 +83,11 @@ class SpinningDisk(MicroscopeBase):
 			suc, stage, batch = self._parse_file_name(file_name)
 			if suc:
 				if batch not in stage_dict:
-					logger.warning(f"Batch {batch} not found in nd files, skip {file_name}")
+					logger.warning(f"Batch '{batch}' not found in nd files, skip '{file_name}'")
 					skiped_files.append(file)
 					continue
 				if stage not in stage_dict[batch]:
-					logger.warning(f"Stage {stage} not found in nd files, skip {file_name}")
+					logger.warning(f"Stage '{stage}' not found in nd files, skip '{file_name}'")
 					skiped_files.append(file)
 					continue
 
@@ -93,6 +98,9 @@ class SpinningDisk(MicroscopeBase):
 				else:
 					self._pos_photo[pos].append(pic)
 				logger.debug(f"Matched photo {file} to position {pos}")
+			else:
+				logger.warning(f"Failed to parse file name: {file_name}, skip it (check regex: '{SpinningDisk.regEx_file_name}')")
+				skiped_files.append(file)
 		if len(skiped_files) > 0:
 			logger.info(f"Skipped files: {skiped_files}")
 		return skiped_files
