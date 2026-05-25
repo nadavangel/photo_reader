@@ -2,7 +2,7 @@ import abc
 
 from photo.photo import Photo
 from photo.wells import WellPos, WellName
-from pathlib import Path, WindowsPath
+from pathlib import Path
 import logging
 import traceback
 from typing import Tuple
@@ -93,7 +93,7 @@ class MicroscopeBase(abc.ABC):
 	def path_value(value: Path | str) -> Path:
 		if type(value) is str:
 			val = Path(value)
-		elif type(value) is Path or type(value) is WindowsPath:
+		elif isinstance(value, Path):
 			val = value
 		else:
 			raise TypeError("Path is not from type 'Path'")
