@@ -107,6 +107,7 @@ python window.py
 - Set file prefix for output files
 - Progress bar during processing
 - Automatic configuration persistence (stored in `.config.ini`)
+- Debug logging to file (SplitToWells.log)
 
 **Keyboard Shortcuts:**
 - `Ctrl+A` - Select all (works in text fields)
@@ -134,10 +135,11 @@ python splitToWells.py [OPTIONS]
 
 **CLI Examples:**
 
-Basic usage (interactive prompts):
+Basic usage (interactive stdin prompts):
 ```bash
 python splitToWells.py
 ```
+The application will prompt you to enter paths and settings via stdin.
 
 With all parameters specified:
 ```bash
@@ -153,6 +155,32 @@ Without creating subdirectories:
 ```bash
 python splitToWells.py -f "/path/to/source" -d "/path/to/dest" --no-subdir -n "flat_output"
 ```
+
+**CLI and GUI Feature Parity:**
+
+Both the CLI and GUI provide equivalent functionality:
+
+| Feature | CLI | GUI |
+|---------|-----|-----|
+| Source folder selection | `-f, --folder` or stdin prompt | Browse button |
+| Destination folder | `-d, --dest` or stdin prompt | Browse button |
+| Output name/prefix | `-n, --name` | Name field |
+| Material/well mapping | `-m, --material` | Material info text area |
+| File prefix | `-p, --file-prefix` | File prefix field |
+| Subdirectory creation | `--no-subdir` (disable) | Create subdir checkbox (enabled by default) |
+| Debug logging | `-v, --verbose` (stdout) | SplitToWells.log file (created automatically) |
+| Interactive mode | Full stdin prompts | N/A |
+
+**CLI Interactive Mode:**
+
+When running `python splitToWells.py` without options, the CLI will prompt you for input via stdin:
+
+```
+Please select source (plate/Spinning disc) folder:
+Please select destination folder:
+```
+
+Simply provide the paths when prompted.
 
 ## Building Standalone Executables
 
@@ -309,7 +337,7 @@ pip install -r requirements.txt
 
 **Solution:**
 - In GUI mode: Use the Browse buttons to select folders
-- In CLI mode: Provide `-f` and `-d` arguments, or respond to interactive prompts
+- In CLI mode: Provide `-f` and `-d` arguments, or respond to stdin interactive prompts
 - Ensure the folders exist and have read/write permissions
 
 #### File permission errors
@@ -356,12 +384,11 @@ Enable verbose logging to troubleshoot issues:
 # CLI mode with debug logging:
 python splitToWells.py -v
 
-# Check log files:
-# GUI mode: SplitToWells.log (created in current directory)
-# CLI mode: stdout output (with -v flag)
+# GUI mode debug logging:
+# Debug logs are automatically saved to SplitToWells.log in the current directory
 ```
 
-Check the log file `SplitToWells.log` (created in the application directory) for detailed error information.
+Check the log file `SplitToWells.log` (created in the application directory) for detailed error information. In GUI mode, this file is created and updated every time you run the application. In CLI mode, use the `-v` flag to enable verbose output to stdout.
 
 ## License
 
