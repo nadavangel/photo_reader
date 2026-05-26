@@ -9,6 +9,6 @@
 
 altgraph==0.17.3
 pefile==2023.2.7
-pyinstaller==5.13.2
+pyinstaller==6.15.0
 pyinstaller-hooks-contrib==2023.8
 pywin32-ctypes==0.2.2
