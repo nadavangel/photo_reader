@@ -22,7 +22,7 @@ jobs:
         run: pip install -r requirements-build.txt
       
       - name: Build exe
-        run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells_windows window.py
+        run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
@@ -42,12 +42,14 @@ jobs:
           python-version: '3.11'
       
       - name: Install dependencies
-        run: pip install -r requirements-build.txt
-      
+        run: |
+          pip install -r requirements-build.txt
+          pip install Pillow==12.2.0
       - name: Build app
         run: |
-          pyinstaller --clean -F --windowed -i="microscope.ico" --name splitToWells window.py
-          zip -r dist/splitToWells_mac.zip dist/splitToWells.app
+          pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
+          cd dist
+          zip -r splitToWells_mac.zip splitToWells.app
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
