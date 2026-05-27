@@ -5,9 +5,49 @@ from datetime import timedelta
 
 import photo
 from photo import WellNameTxt, MicroscopeException, get_exception_location
-from tkinter import filedialog
 import argparse
 import pathlib
+
+def get_folder_input(prompt: str) -> pathlib.Path:
+	"""Get folder path from stdin input with validation."""
+	while True:
+		path_input = input(prompt).strip()
+		if not path_input:
+			print("Error: Path cannot be empty")
+			continue
+		
+		path = pathlib.Path(path_input)
+		if not path.exists():
+			print(f"Error: Path does not exist: {path}")
+			continue
+		
+		if not path.is_dir():
+			print(f"Error: Path is not a directory: {path}")
+			continue
+		
+		return path
+
+def get_text_input(prompt: str, required: bool = False) -> str:
+	"""Get text input from stdin."""
+	while True:
+		value = input(prompt).strip()
+		if not value and required:
+			print("Error: This field is required")
+			continue
+		return value
+
+def get_yes_no_input(prompt: str, default: bool = True) -> bool:
+	"""Get yes/no input from stdin."""
+	default_str = "Y/n" if default else "y/N"
+	while True:
+		response = input(f"{prompt} [{default_str}]: ").strip().lower()
+		if not response:
+			return default
+		if response in ('y', 'yes'):
+			return True
+		if response in ('n', 'no'):
+			return False
+		print("Error: Please enter 'y' (yes) or 'n' (no)")
 
 def main() -> int:  # pragma: no cover
 	
@@ -31,7 +71,7 @@ def main() -> int:  # pragma: no cover
 	# Get source folder
 	if args.folder is None:
 		print('Please select source (plate/Spinning disc) folder:')
-		folder = filedialog.askdirectory(title="Select source folder")
+		folder = get_folder_input('Enter source folder path: ')
 	else:
 		folder = args.folder
 		
@@ -42,7 +82,7 @@ def main() -> int:  # pragma: no cover
 	# Get destination folder
 	if args.dest is None:
 		print('Please select destination folder:')
-		dest = filedialog.askdirectory(title="Select destination folder")
+		dest = get_folder_input('Enter destination folder path: ')
 	else:
 		dest = args.dest
 	
@@ -50,16 +90,47 @@ def main() -> int:  # pragma: no cover
 		logger.error("No destination folder was selected")
 		return 1
 	
+	# Get name/prefix
+	if args.name == "":
+		name = get_text_input('Enter name/prefix for output files (optional): ')
+	else:
+		name = args.name
+	
+	# Get material/wells info
+	material_text = args.material
+	if material_text == "":
+		print('Enter material info with well names (tab-separated: position<TAB>name)')
+		print('Press Enter twice when done, or leave empty to skip:')
+		lines = []
+		while True:
+			line = input()
+			if not line:
+				break
+			lines.append(line)
+		material_text = '\n'.join(lines) if lines else ""
+	
 	# Parse well names if provided
 	well_name = None
-	if args.material:
+	if material_text:
 		try:
-			well_name = WellNameTxt(buff=args.material)
-			logger.debug(f"Parsed material info: {args.material}")
+			well_name = WellNameTxt(buff=material_text)
+			logger.debug(f"Parsed material info: {material_text}")
 		except Exception as e:
 			ex_file, ex_line = get_exception_location()
 			logger.error(f"Error parsing material info: {e} (at {ex_file}:{ex_line})")
 			return 1
+	
+	# Get file prefix
+	if args.file_prefix == "":
+		file_prefix = get_text_input('Enter file prefix for output files (optional): ')
+	else:
+		file_prefix = args.file_prefix
+	
+	# Get subdirectory creation preference
+	if args.no_subdir:
+		create_subdir = False
+	else:
+		create_subdir = get_yes_no_input('Create subdirectories for each position?', default=True)
 	
 	# Initialize microscope
 	try:
@@ -79,10 +150,10 @@ def main() -> int:  # pragma: no cover
 		start = time.time()
 		dest_result = mic.move(
 			dest=dest,
-			prefix=args.name,
-			create_dubdir=not args.no_subdir,
+			prefix=name,
+			create_dubdir=create_subdir,
 			pos_names=well_name,
-			file_prefix=args.file_prefix
+			file_prefix=file_prefix
 		)
 		end = time.time()
 		total_time = timedelta(seconds=end-start)
