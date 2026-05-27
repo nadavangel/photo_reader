@@ -1,0 +1,19 @@
+[tool.ruff]
+line-length = 100  
+
+[tool.ruff.lint]
+ignore = [
+    "F403",  
+    "F405",
+]
+
+[tool.pylint.messages_control]
+disable = [
+    "logging-fstring-interpolation",
+	"too-many-arguments",
+	"too-many-positional-arguments",
+	"too-many-locals"
+]
+
+[tool.pylint.format]
+max-line-length = 100  
