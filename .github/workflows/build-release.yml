@@ -1,0 +1,70 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements-build.txt
+      
+      - name: Build exe
+        run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
+      
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/splitToWells.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements-build.txt
+      
+      - name: Build app
+        run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
+      
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/splitToWells
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install -r requirements-build.txt
+      
+      - name: Build executable
+        run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
+      
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/splitToWells
