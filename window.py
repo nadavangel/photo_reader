@@ -18,7 +18,22 @@ logger = logging.getLogger("mylSplitToWells")
 
 
 class FolderSelect(Frame):
+    """
+    A tkinter Frame for selecting and displaying a folder path.
+
+    Provides a label, an entry field for the path, and a button to browse
+    for a directory using a file dialog.
+    """
     def __init__(self, parent=None, folderDescription="", path: str = "", **kw):
+        """
+        Initialize the FolderSelect frame.
+
+        Args:
+            parent: The parent tkinter widget.
+            folderDescription: The label text describing the folder selection.
+            path: The initial path value.
+            **kw: Additional keyword arguments for the Frame.
+        """
         Frame.__init__(self, master=parent, **kw)
         self._parent = parent
         self.folderPath = StringVar()
@@ -31,6 +46,9 @@ class FolderSelect(Frame):
         self.btnFind.grid(row=0, column=2)
 
     def setFolderPath(self):
+        """
+        Open a directory selection dialog and update the folder path.
+        """
         folder_selected = filedialog.askdirectory(
             parent=self._parent, initialdir=self.folder_path
         )
@@ -39,11 +57,30 @@ class FolderSelect(Frame):
 
     @property
     def folder_path(self):
+        """
+        Get the current folder path.
+
+        Returns:
+            The string representing the folder path.
+        """
         return self.folderPath.get()
 
 
 class Multitext(Frame):
+    """
+    A tkinter Frame for displaying and editing multi-line text.
+
+    Provides a label and a scrolled text area.
+    """
     def __init__(self, parent=None, title="", **kw):
+        """
+        Initialize the Multitext frame.
+
+        Args:
+            parent: The parent tkinter widget.
+            title: The label text describing the text area.
+            **kw: Additional keyword arguments for the Frame and ScrolledText.
+        """
         Frame.__init__(self, master=parent, **kw)
         self._parent = parent
         self.folderPath = StringVar()
@@ -55,10 +92,26 @@ class Multitext(Frame):
 
     @property
     def value(self):
+        """
+        Get the current text content.
+
+        Returns:
+            The string content of the scrolled text area.
+        """
         return self.text.get("1.0", END)
 
     @staticmethod
     def selectAllOperation(event, textWidget):
+        """
+        Select all text in the given widget if it is a ScrolledText instance.
+
+        Args:
+            event: The triggering event.
+            textWidget: The widget to select text from.
+
+        Returns:
+            "break" to prevent further event processing if successful, None otherwise.
+        """
         if isinstance(textWidget, ScrolledText):
             lines = textWidget.get("1.0", "end").split("\n")
             lines.pop()
@@ -72,7 +125,20 @@ class Multitext(Frame):
 
 
 class Input(Frame):
+    """
+    A tkinter Frame for receiving single-line text input.
+
+    Provides a label and an entry field.
+    """
     def __init__(self, parent=None, description="", **kw):
+        """
+        Initialize the Input frame.
+
+        Args:
+            parent: The parent tkinter widget.
+            description: The label text describing the input field.
+            **kw: Additional keyword arguments for the Frame.
+        """
         Frame.__init__(self, master=parent, **kw)
         self.lblName = Label(self, text=description)
         self.lblName.grid(row=0, column=0)
@@ -81,11 +147,28 @@ class Input(Frame):
 
     @property
     def value(self):
+        """
+        Get the current input value.
+
+        Returns:
+            The string content of the entry field.
+        """
         return self.entPath.get()
 
 
 class App(Tk):
+    """
+    The main application window (Tkinter based).
+
+    Manages the UI layout, configuration loading/saving, and the file splitting process.
+    """
     def __init__(self, cfg: configparser.ConfigParser = None):
+        """
+        Initialize the App window.
+
+        Args:
+            cfg: The configuration object to load settings from.
+        """
         super().__init__()
         self.resizable(0, 0)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -157,6 +240,12 @@ class App(Tk):
 
     @staticmethod
     def _onKeyRelease(event):
+        """
+        Handle key release events for cut, copy, paste, and select-all.
+
+        Args:
+            event: The triggering event.
+        """
         ctrl = (event.state & 0x4) != 0
         if event.keycode == 88 and ctrl and event.keysym.lower() != "x":
             event.widget.event_generate("<<Cut>>")
@@ -175,6 +264,9 @@ class App(Tk):
             return "break"
 
     def run(self):
+        """
+        Run the file splitting operation in a separate thread.
+        """
         src = self.src_folder.folderPath.get()
         dst = self.dest_folder.folderPath.get()
         name = self.name.value
@@ -238,23 +330,38 @@ class App(Tk):
         return 0
 
     def start_run(self):
+        """
+        Show the progress bar and disable the run button.
+        """
         self.progressbar.grid(row=self._row)
         self.progressbar.start(20)
         self.btnRun.config(state=DISABLED)
 
     def stop_run(self):
+        """
+        Stop the progress bar, re-enable the run button, and show a completion message.
+        """
         self.progressbar.stop()
         self.progressbar.grid_forget()
         self.btnRun.config(state=NORMAL)
         messagebox.showinfo(title="Done", message="Done")
 
     def monitor(self, run_thread):
+        """
+        Monitor the running thread and stop the UI process upon completion.
+
+        Args:
+            run_thread: The thread running the file splitting process.
+        """
         if run_thread.is_alive():
             self.after(100, lambda: self.monitor(run_thread))
         else:
             self.stop_run()
 
     def _save_configuration(self) -> None:
+        """
+        Save the current UI state to the configuration file.
+        """
         if "Settings" not in self._cfg:
             self._cfg["Settings"] = {}
         self._cfg["Settings"]["src_folder"] = self.src_folder.folder_path
@@ -269,12 +376,24 @@ class App(Tk):
         save_cfg(DEFAULT_CONFIG_FILE, self._cfg)
 
     def on_closing(self):
+        """
+        Handle the application closing event by saving configuration.
+        """
         logger.info("Closing application")
         self._save_configuration()
         self.destroy()
 
 
 def create_and_read_cfg(path: str) -> configparser.ConfigParser:
+    """
+    Read configuration from a file or create a default object if the file is missing.
+
+    Args:
+        path: The path to the configuration file.
+
+    Returns:
+        A configparser.ConfigParser object populated with settings from the file.
+    """
     config = configparser.ConfigParser()
     try:
         with open(path, "r", encoding="utf-8") as cfgfile:
@@ -288,6 +407,15 @@ def create_and_read_cfg(path: str) -> configparser.ConfigParser:
 
 
 def save_cfg(path: str, config: configparser.ConfigParser) -> None:
+    """
+    Save the configuration to a file.
+
+    Includes an update timestamp in the 'Meta' section.
+
+    Args:
+        path: The path to the configuration file.
+        config: The configuration object to save.
+    """
     config["Meta"] = {
         "Update time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
@@ -302,7 +430,16 @@ def save_cfg(path: str, config: configparser.ConfigParser) -> None:
         )
 
 
-def main() -> int:  # pragma: no cover
+def main() -> int:
+    """
+    Main entry point for the SplitToWells GUI application.
+
+    Configures logging, loads settings, initializes the application window,
+    and starts the main GUI loop.
+
+    Returns:
+        0.
+    """
     formatter_stdot = logging.Formatter("%(asctime)s %(levelname)-7s %(message)s")
     formatter_file = logging.Formatter(
         "%(asctime)s.%(msecs)03d %(levelname)-7s [%(funcName)-20s] [%(filename)25s:%(lineno)-4d] %(message)s",
@@ -329,6 +466,7 @@ def main() -> int:  # pragma: no cover
 
     logger.info("Starting SplitToWells")
     window.mainloop()
+    return 0
 
 
 if __name__ == "__main__":

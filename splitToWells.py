@@ -10,7 +10,18 @@ import pathlib
 
 
 def get_folder_input(prompt: str) -> pathlib.Path:
-    """Get folder path from stdin input with validation."""
+    """
+    Get a valid folder path from standard input.
+
+    Prompts the user with the given prompt, validates that the input is not empty,
+    exists, and is a directory. Loops until a valid path is provided.
+
+    Args:
+        prompt: The message to display to the user.
+
+    Returns:
+        A pathlib.Path object representing the validated directory path.
+    """
     while True:
         path_input = input(prompt).strip()
         if not path_input:
@@ -30,7 +41,19 @@ def get_folder_input(prompt: str) -> pathlib.Path:
 
 
 def get_text_input(prompt: str, required: bool = False) -> str:
-    """Get text input from stdin."""
+    """
+    Get text input from standard input.
+
+    Prompts the user with the given prompt and ensures that if required,
+    the input is not empty.
+
+    Args:
+        prompt: The message to display to the user.
+        required: Whether the input field is mandatory.
+
+    Returns:
+        The stripped text input from the user.
+    """
     while True:
         value = input(prompt).strip()
         if not value and required:
@@ -40,7 +63,19 @@ def get_text_input(prompt: str, required: bool = False) -> str:
 
 
 def get_yes_no_input(prompt: str, default: bool = True) -> bool:
-    """Get yes/no input from stdin."""
+    """
+    Get a yes/no response from standard input.
+
+    Prompts the user with the given prompt and a default value indicator.
+    Accepts 'y', 'yes', 'n', or 'no' (case-insensitive).
+
+    Args:
+        prompt: The message to display to the user.
+        default: The default boolean value if the user just presses Enter.
+
+    Returns:
+        True if the user selects yes, False if the user selects no.
+    """
     default_str = "Y/n" if default else "y/N"
     while True:
         response = input(f"{prompt} [{default_str}]: ").strip().lower()
@@ -53,11 +88,16 @@ def get_yes_no_input(prompt: str, default: bool = True) -> bool:
         print("Error: Please enter 'y' (yes) or 'n' (no)")
 
 
-def main() -> int:  # pragma: no cover
+def main() -> int:
+    """
+    Main entry point for the SplitToWells CLI application.
 
-    parser = argparse.ArgumentParser(
-        prog="SplitToWells", description="Split microscope images to well folders"
-    )
+    Parses command line arguments, configures logging, gathers necessary input,
+    initializes the microscope processor, and executes the file splitting operation.
+
+    Returns:
+        0 if the process completes successfully, 1 otherwise.
+    """
     parser.add_argument(
         "-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)"
     )
