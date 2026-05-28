@@ -18,7 +18,6 @@ disable = [
     "too-many-statements",
     "too-few-public-methods",
     "too-many-instance-attributes",
-    "import-error"
 ]
 
 [tool.pylint.basic]
