@@ -2,14 +2,14 @@
 
 import abc
 import logging
-import traceback
 import sys
+import traceback
 from pathlib import Path
 from typing import Tuple
 
 from photo.photo import Photo
-from photo.wells import WellPos, WellName
 from photo.validators import validate_directory
+from photo.wells import WellName, WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -89,15 +89,11 @@ class MicroscopeBase(abc.ABC):
             return self._move(*args, **kwargs)
         except MicroscopeException as e:
             ex_file, ex_line = get_exception_location()
-            logger.error(
-                f"Error occurred while moving files: {e} (at {ex_file}:{ex_line})"
-            )
+            logger.error(f"Error occurred while moving files: {e} (at {ex_file}:{ex_line})")
             return None
         except TypeError as e:
             ex_file, ex_line = get_exception_location()
-            logger.error(
-                f"Type error occurred while moving files: {e} (at {ex_file}:{ex_line})"
-            )
+            logger.error(f"Type error occurred while moving files: {e} (at {ex_file}:{ex_line})")
             return None
 
     def _move(
@@ -145,9 +141,7 @@ class MicroscopeBase(abc.ABC):
 
         if len(skipped_files) > 0:
             skipped_files_names = ", ".join([file.name for file in skipped_files])
-            logger.warning(
-                f"Skipped {len(skipped_files)} file{'s' if len(skipped_files) > 1 else ''}: {skipped_files_names}"
-            )
+            logger.warning(f"Skipped {len(skipped_files)} file{'s' if len(skipped_files) > 1 else ''}: {skipped_files_names}")
 
         return dest_dir
 

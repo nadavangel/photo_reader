@@ -1,20 +1,21 @@
 """
 This module contains the GUI application for splitting photos into wells.
 """
+
 import configparser
 import datetime
 import logging
 import sys
 import threading
-from logging import FileHandler
 import tkinter as tk
-from tkinter import filedialog, messagebox, WORD, END, SEL, DISABLED, NORMAL
+from logging import FileHandler
+from tkinter import DISABLED, END, NORMAL, SEL, WORD, filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Progressbar
 
-from photo.wells import WellNameTxt
 from photo.microscopebase import MicroscopeException, get_exception_location
 from photo.utils import Microscope
+from photo.wells import WellNameTxt
 
 DEFAULT_CONFIG_FILE = ".config.ini"
 
@@ -28,6 +29,7 @@ class FolderSelect(tk.Frame):
     Provides a label, an entry field for the path, and a button to browse
     for a directory using a file dialog.
     """
+
     def __init__(self, parent=None, folder_description="", path: str = "", **kw):
         """
         Initialize the FolderSelect frame.
@@ -53,9 +55,7 @@ class FolderSelect(tk.Frame):
         """
         Open a directory selection dialog and update the folder path.
         """
-        folder_selected = filedialog.askdirectory(
-            parent=self._parent, initialdir=self.folder_path
-        )
+        folder_selected = filedialog.askdirectory(parent=self._parent, initialdir=self.folder_path)
         if folder_selected:
             self.folder_path_var.set(folder_selected)
 
@@ -76,6 +76,7 @@ class Multitext(tk.Frame):
 
     Provides a label and a scrolled text area.
     """
+
     def __init__(self, parent=None, title="", **kw):
         """
         Initialize the Multitext frame.
@@ -134,6 +135,7 @@ class Input(tk.Frame):
 
     Provides a label and an entry field.
     """
+
     def __init__(self, parent=None, description="", **kw):
         """
         Initialize the Input frame.
@@ -164,6 +166,7 @@ class AppUI:
     """
     A container for the UI components of the application.
     """
+
     def __init__(self, master, cfg):
         row = 0
         self.src_folder = FolderSelect(
@@ -199,9 +202,7 @@ class AppUI:
             offvalue=False,
         )
         if cfg.has_option("Settings", "create_subdir"):
-            create_subdir = cfg.getboolean(
-                "Settings", "create_subdir", fallback=True
-            )
+            create_subdir = cfg.getboolean("Settings", "create_subdir", fallback=True)
             if create_subdir:
                 self.create_subdir_checkbox.select()
             else:
@@ -213,7 +214,7 @@ class AppUI:
         self.file_prefix.grid(row=row)
         row += 1
 
-        self.btn_run = tk.Button(master, text="Run") # command is set later
+        self.btn_run = tk.Button(master, text="Run")  # command is set later
         self.btn_run.grid(row=row)
         row += 1
 
@@ -221,9 +222,7 @@ class AppUI:
         self.label.grid(row=row)
         row += 1
 
-        self.progressbar = Progressbar(
-            master, orient="horizontal", mode="indeterminate", length=200
-        )
+        self.progressbar = Progressbar(master, orient="horizontal", mode="indeterminate", length=200)
         self.row_count = row
 
 
@@ -233,6 +232,7 @@ class App(tk.Tk):
 
     Manages the UI layout, configuration loading/saving, and the file splitting process.
     """
+
     def __init__(self, cfg: configparser.ConfigParser = None):
         """
         Initialize the App window.
@@ -313,15 +313,11 @@ class App(tk.Tk):
             mic = Microscope(folder=folder)
         except MicroscopeException as e:
             ex_file, ex_line = get_exception_location()
-            logger.error(
-                f'Error occurred while initializing microscope : "{e}" (at {ex_file}:{ex_line})'
-            )
+            logger.error(f'Error occurred while initializing microscope : "{e}" (at {ex_file}:{ex_line})')
             return
         except TypeError as e:
             ex_file, ex_line = get_exception_location()
-            logger.error(
-                f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})'
-            )
+            logger.error(f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})')
             return
 
         self.start_run()
@@ -379,9 +375,7 @@ class App(tk.Tk):
         self._cfg["Settings"]["dest_folder"] = self.ui.dest_folder.folder_path
         self._cfg["Settings"]["file_prefix"] = self.ui.file_prefix.value
         self._cfg["Settings"]["name"] = self.ui.name.value
-        self._cfg["Settings"]["create_subdir"] = str(
-            self.ui.create_subdir_value.get()
-        )  # Boolean value
+        self._cfg["Settings"]["create_subdir"] = str(self.ui.create_subdir_value.get())  # Boolean value
         self._cfg["Settings"]["well_name"] = self.ui.material.value  # Multitext value
 
         _save_cfg(DEFAULT_CONFIG_FILE, self._cfg)
@@ -411,9 +405,7 @@ def _create_and_read_cfg(path: str) -> configparser.ConfigParser:
             config.read_file(cfgfile)
             logger.debug(f"Configuration loaded from {path}")
     except FileNotFoundError:
-        logger.warning(
-            f"Configuration file {path} not found. Creating default configuration."
-        )
+        logger.warning(f"Configuration file {path} not found. Creating default configuration.")
     return config
 
 
@@ -427,18 +419,14 @@ def _save_cfg(path: str, config: configparser.ConfigParser) -> None:
         path: The path to the configuration file.
         config: The configuration object to save.
     """
-    config["Meta"] = {
-        "Update time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
+    config["Meta"] = {"Update time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     try:
         with open(path, "w", encoding="utf-8") as cfgfile:
             config.write(cfgfile)
             logger.debug(f"Configuration saved to '{path}', contents:\n{config}")
     except (IOError, OSError) as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f"Error occurred while saving configuration to '{path}': {e} (at {ex_file}:{ex_line})"
-        )
+        logger.error(f"Error occurred while saving configuration to '{path}': {e} (at {ex_file}:{ex_line})")
 
 
 def main() -> int:

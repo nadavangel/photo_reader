@@ -1,11 +1,12 @@
 """Module for representing microscope images as Photo objects."""
 
-import shutil
-import re
 import logging
+import re
+import shutil
 from pathlib import Path
-from photo.wells import WellPos
+
 from photo.validators import validate_file
+from photo.wells import WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -130,7 +131,5 @@ def sanitize_path(path: str) -> str:
     if reserved.match(sanitized):
         sanitized += "_"
     if sanitized != path:
-        print(
-            f"Warning: Invalid characters found in path '{path}'. Replacing with '_'."
-        )
+        print(f"Warning: Invalid characters found in path '{path}'. Replacing with '_'.")
     return sanitized

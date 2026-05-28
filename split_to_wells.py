@@ -1,14 +1,15 @@
 """Module for command-line interface for splitting microscope images into well folders."""
+
+import argparse
 import logging
+import pathlib
 import sys
 import time
-import argparse
-import pathlib
 from datetime import timedelta
 
-from photo.wells import WellNameTxt
 from photo.microscopebase import MicroscopeException, get_exception_location
 from photo.utils import Microscope
+from photo.wells import WellNameTxt
 
 
 def get_folder_input(prompt: str) -> pathlib.Path:
@@ -101,13 +102,9 @@ def main() -> int:
         0 if the process completes successfully, 1 otherwise.
     """
     parser = argparse.ArgumentParser(description="Split microscope images into well folders.")
-    parser.add_argument(
-        "-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)"
-    )
+    parser.add_argument("-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)")
     parser.add_argument("-d", "--dest", type=pathlib.Path, help="Destination folder")
-    parser.add_argument(
-        "-n", "--name", type=str, default="", help="Name/prefix for the output"
-    )
+    parser.add_argument("-n", "--name", type=str, default="", help="Name/prefix for the output")
     parser.add_argument(
         "-m",
         "--material",
@@ -115,9 +112,7 @@ def main() -> int:
         default="",
         help="Material info with well names (tab-separated: position\\tname)",
     )
-    parser.add_argument(
-        "-p", "--file-prefix", type=str, default="", help="File prefix for output files"
-    )
+    parser.add_argument("-p", "--file-prefix", type=str, default="", help="File prefix for output files")
     parser.add_argument(
         "--no-subdir",
         action="store_true",
@@ -204,9 +199,7 @@ def main() -> int:
     if args.no_subdir:
         create_subdir = False
     else:
-        create_subdir = get_yes_no_input(
-            "Create subdirectories for each position?", default=True
-        )
+        create_subdir = get_yes_no_input("Create subdirectories for each position?", default=True)
 
     # Initialize microscope
     try:
@@ -214,15 +207,11 @@ def main() -> int:
         logger.info(f"Initialized microscope from folder: {folder}")
     except MicroscopeException as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f'Error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})'
-        )
+        logger.error(f'Error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})')
         return 1
     except TypeError as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})'
-        )
+        logger.error(f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})')
         return 1
 
     # Process files
@@ -238,15 +227,11 @@ def main() -> int:
         end = time.time()
         total_time = timedelta(seconds=end - start)
 
-        logger.info(
-            f"Done, it took {str(total_time)}, the files are at {str(dest_result)}"
-        )
+        logger.info(f"Done, it took {str(total_time)}, the files are at {str(dest_result)}")
         return 0
     except (MicroscopeException, TypeError, OSError) as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f"Error occurred while processing files: {e} (at {ex_file}:{ex_line})"
-        )
+        logger.error(f"Error occurred while processing files: {e} (at {ex_file}:{ex_line})")
         return 1
 
 

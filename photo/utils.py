@@ -1,6 +1,7 @@
 """Module for factory methods to instantiate the appropriate microscope processor."""
 
 import logging
+
 from photo.eva import Eva
 from photo.microscopebase import MicroscopeBase
 from photo.spinning_disk import SpinningDisk

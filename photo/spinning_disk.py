@@ -5,8 +5,8 @@ import re
 from pathlib import Path
 
 from photo.microscopebase import MicroscopeBase, MicroscopeException
-from photo.wells import WellPos, WellName
 from photo.photo import Photo
+from photo.wells import WellName, WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -116,15 +116,11 @@ class SpinningDisk(MicroscopeBase):
             suc, stage, batch = self._parse_file_name(file_name)
             if suc:
                 if batch not in stage_dict:
-                    logger.warning(
-                        f"Batch '{batch}' not found in nd files, skip '{file_name}'"
-                    )
+                    logger.warning(f"Batch '{batch}' not found in nd files, skip '{file_name}'")
                     skiped_files.append(file)
                     continue
                 if stage not in stage_dict[batch]:
-                    logger.warning(
-                        f"Stage '{stage}' not found in nd files, skip '{file_name}'"
-                    )
+                    logger.warning(f"Stage '{stage}' not found in nd files, skip '{file_name}'")
                     skiped_files.append(file)
                     continue
 
@@ -132,9 +128,7 @@ class SpinningDisk(MicroscopeBase):
                 self._add_photo(pos, Photo(path=file, pos=pos))
                 logger.debug(f"Matched photo {file} to position {pos}")
             else:
-                logger.warning(
-                    f"Failed to parse file name: {file_name}, skip it (check regex: '{SpinningDisk.regEx_file_name}')"
-                )
+                logger.warning(f"Failed to parse file name: {file_name}, skip it (check regex: '{SpinningDisk.regEx_file_name}')")
                 skiped_files.append(file)
         if len(skiped_files) > 0:
             logger.info(f"Skipped files: {skiped_files}")

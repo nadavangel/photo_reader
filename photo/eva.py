@@ -1,13 +1,13 @@
 """Module for processing Eva microscope image data."""
 
-import re
 import logging
+import re
 from pathlib import Path
 
 from photo.microscopebase import MicroscopeBase
-from photo.wells import WellPos, WellName
 from photo.photo import Photo
 from photo.validators import validate_directory
+from photo.wells import WellName, WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 

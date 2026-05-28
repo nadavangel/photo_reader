@@ -17,8 +17,12 @@ disable = [
     "too-many-return-statements",
     "too-many-statements",
     "too-few-public-methods",
-    "too-many-instance-attributes"
+    "too-many-instance-attributes",
+    "import-error"
 ]
+
+[tool.pylint.basic]
+ignored-modules = ["tkinter"]
 
 [tool.pylint.format]
 max-line-length = 150  

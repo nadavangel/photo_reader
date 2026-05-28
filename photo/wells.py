@@ -1,9 +1,8 @@
 """Module for handling well position and name mapping."""
 
 import abc
-from dataclasses import field, dataclass
-
 import logging
+from dataclasses import dataclass, field
 
 logger = logging.getLogger("mylSplitToWells")
 
