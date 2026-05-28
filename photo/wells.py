@@ -1,3 +1,5 @@
+"""Module for handling well position and name mapping."""
+
 import abc
 from dataclasses import field, dataclass
 
@@ -8,6 +10,8 @@ logger = logging.getLogger("mylSplitToWells")
 
 @dataclass
 class WellPos:
+    """Represents a position in a multi-well plate."""
+
     row: str  # A-P
     col: int
     site: int
@@ -15,6 +19,12 @@ class WellPos:
 
     @classmethod
     def create(cls, pos: tuple):
+        """
+        Create a WellPos instance from a tuple.
+
+        :param pos: A tuple (row, col, [site]).
+        :return: A WellPos instance.
+        """
         if type(pos) is not tuple:
             raise TypeError("Pos is not tuple")
         if len(pos) == 3:
@@ -24,6 +34,12 @@ class WellPos:
         return cls(row=pos[0], col=pos[1], site=site)
 
     def samePos(self, other):
+        """
+        Check if another WellPos instance refers to the same position.
+
+        :param other: Another WellPos instance.
+        :return: True if the row and column are the same, False otherwise.
+        """
         return self.row == other.row and self.col == other.col
 
     def __hash__(self):
@@ -38,6 +54,8 @@ class WellPos:
 
 
 class WellName:
+    """Abstract base class for well name mapping."""
+
     _info: dict[str, str]
 
     def __init__(self):
@@ -56,10 +74,13 @@ class WellName:
 
     @abc.abstractmethod
     def _fill(self):
+        """Abstract method to populate the well name mapping."""
         pass
 
 
 class WellNameTxt(WellName):
+    """Concrete class for well name mapping from text data."""
+
     _buff: str
     _delimiter: str
 
@@ -69,6 +90,7 @@ class WellNameTxt(WellName):
         super().__init__()
 
     def _fill(self):
+        """Populate the well name mapping from text data."""
         lines = self._buff.splitlines()
         header = False
         for raw_line in lines:

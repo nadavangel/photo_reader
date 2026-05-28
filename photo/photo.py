@@ -1,19 +1,28 @@
+"""Module for representing microscope images as Photo objects."""
+
 import shutil
 from pathlib import Path
 import re
-
-from photo.wells import WellPos
 import logging
+from photo.wells import WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
 
 class Photo:
+    """Represents a single microscope image file with associated well position metadata."""
+
     _well: WellPos
     _name: str
     _path: Path
 
     def __init__(self, path: Path, pos: WellPos | tuple = None):
+        """
+        Initialize a Photo instance.
+
+        :param path: The filesystem path to the image file.
+        :param pos: The well position as a WellPos object or (row, col, site) tuple.
+        """
         if pos is not None:
             self.pos = pos
 
@@ -22,10 +31,16 @@ class Photo:
 
     @property
     def pos(self):
+        """Get the well position."""
         return self._well
 
     @pos.setter
     def pos(self, pos: WellPos | tuple):
+        """
+        Set the well position.
+
+        :param pos: The well position as a WellPos object or (row, col, site) tuple.
+        """
         if type(pos) is tuple:
             self._well = WellPos.create(pos)
         elif type(pos) is WellPos:
@@ -35,24 +50,43 @@ class Photo:
         logger.debug(f"Position set to: {self._well}")
 
     def set_well(self, row: str, col: int, site=1):
+        """
+        Set the well position explicitly.
+
+        :param row: Well row identifier (e.g., 'A').
+        :param col: Well column identifier.
+        :param site: Well site number.
+        """
         self._well = WellPos(row=row, col=col, site=site)
         logger.debug(f"Well set to: {self._well}")
 
     @property
     def name(self):
+        """Get the name/prefix associated with the image."""
         return self._name
 
     @name.setter
     def name(self, value: str):
+        """
+        Set the name/prefix associated with the image.
+
+        :param value: The name/prefix string.
+        """
         self._name = value
         logger.debug(f"Name set to: {self._name}")
 
     @property
     def path(self):
+        """Get the image file path."""
         return self._path
 
     @path.setter
     def path(self, value: Path | str):
+        """
+        Set the image file path.
+
+        :param value: The filesystem path to the image file (Path or str).
+        """
         if type(value) is str:
             val = Path(value)
         elif type(value) is Path:
@@ -66,6 +100,13 @@ class Photo:
         logger.debug(f"Path set to: {self._path}")
 
     def copy(self, dest: Path, new_name: str = "", prefix: str = ""):
+        """
+        Copy the image to a destination directory with an optional new name and prefix.
+
+        :param dest: The destination directory path.
+        :param new_name: An optional new name for the file.
+        :param prefix: An optional prefix to add to the filename.
+        """
         if new_name != "":
             name = new_name
         else:
@@ -82,7 +123,8 @@ class Photo:
 
 def sanitize_path(path: str) -> str:
     """
-    Sanitize a file path by replacing invalid characters with underscores. For Windows file systems.
+    Sanitize a file path by replacing invalid characters with underscores for Windows compatibility.
+
     :param path: The file path to sanitize.
     :return: The sanitized file path.
     """
