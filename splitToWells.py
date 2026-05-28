@@ -1,12 +1,13 @@
 import logging
 import sys
 import time
-from datetime import timedelta
-
-import photo
-from photo import WellNameTxt, MicroscopeException, get_exception_location
 import argparse
 import pathlib
+from datetime import timedelta
+
+from photo.wells import WellNameTxt
+from photo.microscopebase import MicroscopeException, get_exception_location
+from photo.utils import Microscope
 
 
 def get_folder_input(prompt: str) -> pathlib.Path:
@@ -98,6 +99,7 @@ def main() -> int:
     Returns:
         0 if the process completes successfully, 1 otherwise.
     """
+    parser = argparse.ArgumentParser(description="Split microscope images into well folders.")
     parser.add_argument(
         "-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)"
     )
@@ -207,7 +209,7 @@ def main() -> int:
 
     # Initialize microscope
     try:
-        mic = photo.Microscope(folder=folder)
+        mic = Microscope(folder=folder)
         logger.info(f"Initialized microscope from folder: {folder}")
     except MicroscopeException as e:
         ex_file, ex_line = get_exception_location()
@@ -239,7 +241,7 @@ def main() -> int:
             f"Done, it took {str(total_time)}, the files are at {str(dest_result)}"
         )
         return 0
-    except Exception as e:
+    except (MicroscopeException, TypeError, OSError) as e:
         ex_file, ex_line = get_exception_location()
         logger.error(
             f"Error occurred while processing files: {e} (at {ex_file}:{ex_line})"
