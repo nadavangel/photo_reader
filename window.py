@@ -2,6 +2,8 @@
 This module contains the GUI application for splitting photos into wells.
 """
 
+from __future__ import annotations
+
 import configparser
 import datetime
 import logging

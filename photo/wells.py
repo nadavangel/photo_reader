@@ -1,7 +1,10 @@
 """Module for handling well position and name mapping."""
 
+from __future__ import annotations
+
 import abc
 import logging
+import typing
 from dataclasses import dataclass, field
 
 logger = logging.getLogger("mylSplitToWells")
@@ -55,7 +58,7 @@ class WellPos:
 class WellName:
     """Abstract base class for well name mapping."""
 
-    _info: dict[str, str]
+    _info: typing.Dict[str, str]
 
     def __init__(self):
         super().__init__()

@@ -1,8 +1,11 @@
 """Module for representing microscope images as Photo objects."""
 
+from __future__ import annotations
+
 import logging
 import re
 import shutil
+import typing
 from pathlib import Path
 
 from photo.validators import validate_file
@@ -18,7 +21,7 @@ class Photo:
     _name: str
     _path: Path
 
-    def __init__(self, path: Path, pos: WellPos | tuple = None):
+    def __init__(self, path: Path, pos: typing.Optional[typing.Union[WellPos, tuple]] = None):
         """
         Initialize a Photo instance.
 
@@ -37,7 +40,7 @@ class Photo:
         return self._well
 
     @pos.setter
-    def pos(self, pos: WellPos | tuple):
+    def pos(self, pos: typing.Union[WellPos, tuple]):
         """
         Set the well position.
 
@@ -83,7 +86,7 @@ class Photo:
         return self._path
 
     @path.setter
-    def path(self, value: Path | str):
+    def path(self, value: typing.Union[Path, str]):
         """
         Set the image file path.
 

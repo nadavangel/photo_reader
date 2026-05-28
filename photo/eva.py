@@ -1,5 +1,7 @@
 """Module for processing Eva microscope image data."""
 
+from __future__ import annotations
+
 import logging
 import re
 from pathlib import Path
@@ -17,7 +19,7 @@ class Eva(MicroscopeBase):
 
     regEx_file_name = r"(?P<row>[A-Za-z]+)(?P<col>\d+)[-]*W(?P<well>\d+)[-]*P(?P<pos>\d+)[-]*Z(?P<z>\d+)[-]*T(?P<time>\d+)[-]*(?P<channel>\w+).tif"
 
-    def __init__(self, folder: Path | str):
+    def __init__(self, folder: Path or str):
         """
         Initialize the Eva instance.
 
@@ -28,7 +30,7 @@ class Eva(MicroscopeBase):
         super().__init__(folder=data_folder)
 
     @staticmethod
-    def _parse_file_name(line: str, pos_names: WellName | None = None):
+    def _parse_file_name(line: str, pos_names: WellName or None = None):
         """
         Parse a filename to extract position information.
 
@@ -49,7 +51,7 @@ class Eva(MicroscopeBase):
         logger.debug(f"Parsed position: {pos}")
         return (True, pos)
 
-    def _match(self, pos_names: WellName | None = None):
+    def _match(self, pos_names: WellName or None = None):
         """
         Match files in the source folder to well positions.
 

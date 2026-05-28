@@ -1,7 +1,10 @@
 """Module for processing Spinning Disk microscope image data."""
 
+from __future__ import annotations
+
 import logging
 import re
+import typing
 from pathlib import Path
 
 from photo.microscopebase import MicroscopeBase, MicroscopeException
@@ -14,11 +17,11 @@ logger = logging.getLogger("mylSplitToWells")
 class SpinningDisk(MicroscopeBase):
     """Represents data from a Spinning Disk microscope."""
 
-    _nd_files: list[Path]
+    _nd_files: typing.List[Path]
     regEx_nd = r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$"
     regEx_file_name = r"^(?P<batch>[\w\s\-\_]*)_.*_s(?P<stage>\d+).*\.(tif|stk)$"
 
-    def __init__(self, folder: Path | str):
+    def __init__(self, folder: typing.Union[Path, str]):
         """
         Initialize the SpinningDisk instance.
 
@@ -41,7 +44,7 @@ class SpinningDisk(MicroscopeBase):
             self._files_list.remove(file)
 
     @staticmethod
-    def _parse_line(line: str, pos_names: WellName | None = None):
+    def _parse_line(line: str, pos_names: typing.Optional[WellName] = None):
         """
         Parse a line from an .nd file to extract position information.
 
@@ -84,7 +87,7 @@ class SpinningDisk(MicroscopeBase):
             parsed_successfully = False
         return (parsed_successfully, int(di["stage"]), di["batch"])
 
-    def _match(self, pos_names: WellName | None = None):
+    def _match(self, pos_names: typing.Optional[WellName] = None):
         """
         Match files in the source folder to well positions based on .nd file data.
 

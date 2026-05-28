@@ -1,5 +1,7 @@
 """Module for factory methods to instantiate the appropriate microscope processor."""
 
+from __future__ import annotations
+
 import logging
 
 from photo.eva import Eva

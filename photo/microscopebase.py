@@ -1,11 +1,13 @@
 """Module for base class and exception handling for microscope data processing."""
 
+from __future__ import annotations
+
 import abc
 import logging
 import sys
 import traceback
+import typing
 from pathlib import Path
-from typing import Tuple
 
 from photo.photo import Photo
 from photo.validators import validate_directory
@@ -18,7 +20,7 @@ class MicroscopeException(Exception):
     """Exception raised for errors in microscope data processing."""
 
 
-def get_exception_location() -> Tuple[str, int]:
+def get_exception_location() -> typing.Tuple[str, int]:
     """
     Get the filename and line number where an exception occurred.
 
@@ -40,10 +42,10 @@ class MicroscopeBase(abc.ABC):
     """Abstract base class for different types of microscope data sources."""
 
     _path: Path
-    _files_list: list[Path]
-    _pos_photo: dict[WellPos, list[Photo]]
+    _files_list: typing.List[Path]
+    _pos_photo: typing.Dict[WellPos, typing.List[Photo]]
 
-    def __init__(self, folder: Path | str):
+    def __init__(self, folder: typing.Union[Path, str]):
         """
         Initialize the MicroscopeBase instance.
 
@@ -58,7 +60,7 @@ class MicroscopeBase(abc.ABC):
         self._files_list = list(self.path.iterdir())
 
     @abc.abstractmethod
-    def _match(self, pos_names: WellName | None = None):
+    def _match(self, pos_names: typing.Optional[WellName] = None):
         """
         Abstract method to match files to well positions.
 
@@ -98,10 +100,10 @@ class MicroscopeBase(abc.ABC):
 
     def _move(
         self,
-        dest: Path | str,
+        dest: typing.Union[Path, str],
         prefix: str = "",
         create_dubdir: bool = True,
-        pos_names: WellName | None = None,
+        pos_names: typing.Optional[WellName] = None,
         file_prefix: str = "",
     ):
         """
@@ -151,7 +153,7 @@ class MicroscopeBase(abc.ABC):
         return self._path
 
     @path.setter
-    def path(self, value: Path | str):
+    def path(self, value: typing.Union[Path, str]):
         """
         Set the source path.
 

@@ -1,2 +1,3 @@
-# Make it empty or only contain necessary exports.
-# Keeping it empty for now to strictly break cyclic imports.
+"""Module for initializing the photo package."""
+
+from __future__ import annotations

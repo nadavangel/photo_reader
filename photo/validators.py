@@ -1,9 +1,12 @@
 """Module for path validation functions."""
 
+from __future__ import annotations
+
+import typing
 from pathlib import Path
 
 
-def validate_directory(value: Path | str) -> Path:
+def validate_directory(value: typing.Union[Path, str]) -> Path:
     """
     Validate and convert a string or Path object to a Path object representing a directory.
 
@@ -22,7 +25,7 @@ def validate_directory(value: Path | str) -> Path:
     return val
 
 
-def validate_file(value: Path | str) -> Path:
+def validate_file(value: typing.Union[Path, str]) -> Path:
     """
     Validate and convert a string or Path object to a Path object representing a file.
 
