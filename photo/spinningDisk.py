@@ -1,10 +1,12 @@
 """Module for processing Spinning Disk microscope image data."""
 
+import logging
 import re
 from pathlib import Path
-from photo import MicroscopeBase, MicroscopeException, WellPos, Photo, WellName
 
-import logging
+from photo.microscopebase import MicroscopeBase, MicroscopeException
+from photo.wells import WellPos, WellName
+from photo.photo import Photo
 
 logger = logging.getLogger("mylSplitToWells")
 

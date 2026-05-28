@@ -1,7 +1,10 @@
 """Module for factory methods to instantiate the appropriate microscope processor."""
 
-from photo import Eva, MicroscopeBase, SpinningDisk
 import logging
+
+from photo.eva import Eva
+from photo.microscopebase import MicroscopeBase
+from photo.spinningDisk import SpinningDisk
 
 logger = logging.getLogger("mylSplitToWells")
 

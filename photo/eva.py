@@ -1,10 +1,12 @@
 """Module for processing Eva microscope image data."""
 
 import re
+import logging
 from pathlib import Path
 
-from photo import MicroscopeBase, WellPos, Photo, WellName
-import logging
+from photo.microscopebase import MicroscopeBase
+from photo.wells import WellPos, WellName
+from photo.photo import Photo
 
 logger = logging.getLogger("mylSplitToWells")
 
