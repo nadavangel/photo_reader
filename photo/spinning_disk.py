@@ -97,7 +97,7 @@ class SpinningDisk(MicroscopeBase):
         for nd_file in self._nd_files:
             batch = {}
             logger.info(f"Processing .nd file: {nd_file}")
-            with open(nd_file, "r") as f:
+            with open(nd_file, "r", encoding="utf-8") as f:
                 while True:
                     raw_line = f.readline()
                     if not raw_line:
@@ -129,11 +129,7 @@ class SpinningDisk(MicroscopeBase):
                     continue
 
                 pos = stage_dict[batch][stage]
-                pic = Photo(path=file, pos=pos)
-                if pos not in self._pos_photo:
-                    self._pos_photo[pos] = [pic]
-                else:
-                    self._pos_photo[pos].append(pic)
+                self._add_photo(pos, Photo(path=file, pos=pos))
                 logger.debug(f"Matched photo {file} to position {pos}")
             else:
                 logger.warning(

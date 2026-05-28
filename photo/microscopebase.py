@@ -9,6 +9,7 @@ from typing import Tuple
 
 from photo.photo import Photo
 from photo.wells import WellPos, WellName
+from photo.validators import validate_directory
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -23,7 +24,7 @@ def get_exception_location() -> Tuple[str, int]:
 
     :return: A tuple containing the filename and line number.
     """
-    _ , _, exc_traceback = sys.exc_info()
+    _, _, exc_traceback = sys.exc_info()
 
     last_frame = traceback.extract_tb(exc_traceback)[-1]
 
@@ -64,6 +65,19 @@ class MicroscopeBase(abc.ABC):
         :param pos_names: Optional well name mapping.
         """
 
+    def _add_photo(self, pos: WellPos, photo: Photo):
+        """
+        Add a photo to the internal position-to-photo mapping.
+
+        :param pos: The well position.
+        :param photo: The photo object.
+        """
+        if pos not in self._pos_photo:
+            self._pos_photo[pos] = [photo]
+        else:
+            self._pos_photo[pos].append(photo)
+
+    def move(self, *args, **kwargs):
         """
         Move files to the destination directory with error handling.
 
@@ -104,7 +118,7 @@ class MicroscopeBase(abc.ABC):
         :param file_prefix: Optional file prefix.
         :return: The destination directory path.
         """
-        base_dest_dir = self.path_value(dest)
+        base_dest_dir = validate_directory(dest)
         if not base_dest_dir.is_dir():
             raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
         dest_dir = base_dest_dir.absolute() / "out"
@@ -112,7 +126,7 @@ class MicroscopeBase(abc.ABC):
         logger.info(f"Create {str(dest_dir)}")
         skipped_files = self._match(pos_names)
 
-        for pos in self._pos_photo:
+        for pos, photos in self._pos_photo.items():
             if create_dubdir:
                 pos_dir = dest_dir / str(pos)
                 pos_dir.mkdir(parents=True, exist_ok=True)
@@ -125,9 +139,9 @@ class MicroscopeBase(abc.ABC):
             if file_prefix:
                 pos_prefix = f"{file_prefix}_{pos_prefix}"
 
-            for file in self._pos_photo[pos]:
-                file.copy(pos_dir, prefix=pos_prefix)
-                logger.info(f'Copy "{str(file.path.name)}" to {str(pos)}')
+            for photo in photos:
+                photo.copy(pos_dir, prefix=pos_prefix)
+                logger.info(f'Copy "{str(photo.path.name)}" to {str(pos)}')
 
         if len(skipped_files) > 0:
             skipped_files_names = ", ".join([file.name for file in skipped_files])
@@ -142,25 +156,6 @@ class MicroscopeBase(abc.ABC):
         """Get the source path."""
         return self._path
 
-    @staticmethod
-    def path_value(value: Path | str) -> Path:
-        """
-        Validate and convert a string or Path object to a Path object.
-
-        :param value: The path value (Path or str).
-        :return: A Path object.
-        """
-        if isinstance(value, str):
-            val = Path(value)
-        elif isinstance(value, Path):
-            val = value
-        else:
-            raise TypeError("Path is not from type 'Path'")
-
-        if not val.is_dir():
-            raise TypeError(f'Path "{str(val)}", is not a dirctory.')
-        return val
-
     @path.setter
     def path(self, value: Path | str):
         """
@@ -168,4 +163,4 @@ class MicroscopeBase(abc.ABC):
 
         :param value: The source path (Path or str).
         """
-        self._path = self.path_value(value)
+        self._path = validate_directory(value)

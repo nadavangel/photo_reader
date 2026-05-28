@@ -1,29 +1,24 @@
 """Module for factory methods to instantiate the appropriate microscope processor."""
 
 import logging
-
 from photo.eva import Eva
 from photo.microscopebase import MicroscopeBase
-from photo.spinningDisk import SpinningDisk
+from photo.spinning_disk import SpinningDisk
+from photo.validators import validate_directory
 
 logger = logging.getLogger("mylSplitToWells")
 
 
-class Microscope:
-    """Factory class to create the appropriate microscope processor based on input folder."""
+def Microscope(folder: str) -> MicroscopeBase:  # pylint: disable=invalid-name
+    """
+    Factory function to create the appropriate microscope processor based on input folder.
 
-    def __new__(cls, *args, **kwargs):
-        """
-        Create and return an instance of Eva or SpinningDisk based on the folder content.
+    :param folder: The path to the folder containing microscope images.
+    :return: An instance of Eva or SpinningDisk.
+    """
+    folder_path = validate_directory(folder)
+    data_dir = folder_path / "data"
+    if data_dir.is_dir():
+        return Eva(folder=folder_path)
 
-        :param folder: The path to the folder containing microscope images.
-        :return: An instance of Eva or SpinningDisk.
-        """
-        folder = MicroscopeBase.path_value(kwargs.get("folder"))
-        data_dir = folder / "data"
-        if data_dir.is_dir():
-            cls = Eva
-        else:
-            cls = SpinningDisk
-
-        return cls(folder=folder)
+    return SpinningDisk(folder=folder_path)

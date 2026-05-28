@@ -1,10 +1,11 @@
 """Module for representing microscope images as Photo objects."""
 
 import shutil
-from pathlib import Path
 import re
 import logging
+from pathlib import Path
 from photo.wells import WellPos
+from photo.validators import validate_file
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -87,16 +88,7 @@ class Photo:
 
         :param value: The filesystem path to the image file (Path or str).
         """
-        if isinstance(value, str):
-            val = Path(value)
-        elif isinstance(value, Path):
-            val = value
-        else:
-            raise TypeError("Path is not from type 'Path'")
-
-        if not val.is_file():
-            raise TypeError(f'Path "{str(val)}", is not a file.')
-        self._path = val
+        self._path = validate_file(value)
         logger.debug(f"Path set to: {self._path}")
 
     def copy(self, dest: Path, new_name: str = "", prefix: str = ""):

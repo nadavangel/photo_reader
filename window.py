@@ -12,8 +12,9 @@ from tkinter import filedialog, messagebox, WORD, END, SEL, DISABLED, NORMAL
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Progressbar
 
-import photo
-from photo import WellNameTxt, MicroscopeException, get_exception_location
+from photo.wells import WellNameTxt
+from photo.microscopebase import MicroscopeException, get_exception_location
+from photo.utils import Microscope
 
 DEFAULT_CONFIG_FILE = ".config.ini"
 
@@ -164,30 +165,30 @@ class AppUI:
     A container for the UI components of the application.
     """
     def __init__(self, master, cfg):
-        self._row = 0
+        row = 0
         self.src_folder = FolderSelect(
             master,
             "Select source folder",
             path=cfg.get("Settings", "src_folder", fallback=""),
         )
-        self.src_folder.grid(row=self._row)
-        self._row += 1
+        self.src_folder.grid(row=row)
+        row += 1
 
         self.dest_folder = FolderSelect(
             master,
             "Select destination folder",
             path=cfg.get("Settings", "dest_folder", fallback=""),
         )
-        self.dest_folder.grid(row=self._row)
-        self._row += 1
+        self.dest_folder.grid(row=row)
+        row += 1
 
         self.name = Input(master, "Name")
-        self.name.grid(row=self._row)
-        self._row += 1
+        self.name.grid(row=row)
+        row += 1
 
         self.material = Multitext(master, title="Material info", width=20, height=3)
-        self.material.grid(row=self._row)
-        self._row += 1
+        self.material.grid(row=row)
+        row += 1
 
         self.create_subdir_value = tk.BooleanVar()
         self.create_subdir_checkbox = tk.Checkbutton(
@@ -205,24 +206,25 @@ class AppUI:
                 self.create_subdir_checkbox.select()
             else:
                 self.create_subdir_checkbox.deselect()
-        self.create_subdir_checkbox.grid(row=self._row)
-        self._row += 1
+        self.create_subdir_checkbox.grid(row=row)
+        row += 1
 
         self.file_prefix = Input(master, "File prefix")
-        self.file_prefix.grid(row=self._row)
-        self._row += 1
+        self.file_prefix.grid(row=row)
+        row += 1
 
         self.btn_run = tk.Button(master, text="Run") # command is set later
-        self.btn_run.grid(row=self._row)
-        self._row += 1
+        self.btn_run.grid(row=row)
+        row += 1
 
         self.label = tk.Label(master, text="")
-        self.label.grid(row=self._row)
-        self._row += 1
+        self.label.grid(row=row)
+        row += 1
 
         self.progressbar = Progressbar(
             master, orient="horizontal", mode="indeterminate", length=200
         )
+        self.row_count = row
 
 
 class App(tk.Tk):
@@ -308,7 +310,7 @@ class App(tk.Tk):
             well_name = WellNameTxt(buff=self.ui.material.value)
 
         try:
-            mic = photo.Microscope(folder=folder)
+            mic = Microscope(folder=folder)
         except MicroscopeException as e:
             ex_file, ex_line = get_exception_location()
             logger.error(
@@ -342,7 +344,7 @@ class App(tk.Tk):
         """
         Show the progress bar and disable the run button.
         """
-        self.ui.progressbar.grid(row=self.ui._row)
+        self.ui.progressbar.grid(row=self.ui.row_count)
         self.ui.progressbar.start(20)
         self.ui.btn_run.config(state=DISABLED)
 
@@ -479,5 +481,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    re = main()
-    sys.exit(re)
+    EXIT_CODE = main()
+    sys.exit(EXIT_CODE)

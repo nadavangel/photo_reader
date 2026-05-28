@@ -1,3 +1,4 @@
+"""Module for command-line interface for splitting microscope images into well folders."""
 import logging
 import sys
 import time
@@ -188,7 +189,7 @@ def main() -> int:
         try:
             well_name = WellNameTxt(buff=material_text)
             logger.debug(f"Parsed material info: {material_text}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             ex_file, ex_line = get_exception_location()
             logger.error(f"Error parsing material info: {e} (at {ex_file}:{ex_line})")
             return 1
@@ -250,6 +251,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    re = main()
+    EXIT_CODE = main()
     input("Press Enter to exit")
-    sys.exit(re)
+    sys.exit(EXIT_CODE)

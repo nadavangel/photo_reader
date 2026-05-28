@@ -7,6 +7,7 @@ from pathlib import Path
 from photo.microscopebase import MicroscopeBase
 from photo.wells import WellPos, WellName
 from photo.photo import Photo
+from photo.validators import validate_directory
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -22,7 +23,7 @@ class Eva(MicroscopeBase):
 
         :param folder: The path to the folder containing microscope images.
         """
-        data_folder = str(self.path_value(folder) / "data")
+        data_folder = str(validate_directory(folder) / "data")
         logger.debug(f"Initializing Eva with data folder: {data_folder}")
         super().__init__(folder=data_folder)
 
@@ -66,11 +67,7 @@ class Eva(MicroscopeBase):
             file_name = file.name.strip()
             suc, pos = self._parse_file_name(file_name, pos_names=pos_names)
             if suc:
-                pic = Photo(path=file, pos=pos)
-                if pos not in self._pos_photo:
-                    self._pos_photo[pos] = [pic]
-                else:
-                    self._pos_photo[pos].append(pic)
+                self._add_photo(pos, Photo(path=file, pos=pos))
                 logger.debug(f"Matched file {file_name} to position {pos}")
             else:
                 logger.warning(f"Failed to match file: {file_name}")
