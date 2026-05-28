@@ -41,9 +41,9 @@ class Photo:
 
         :param pos: The well position as a WellPos object or (row, col, site) tuple.
         """
-        if type(pos) is tuple:
+        if isinstance(pos, tuple):
             self._well = WellPos.create(pos)
-        elif type(pos) is WellPos:
+        elif isinstance(pos, WellPos):
             self._well = pos
         else:
             raise TypeError("pos is not a WellPos or tuple")
@@ -87,9 +87,9 @@ class Photo:
 
         :param value: The filesystem path to the image file (Path or str).
         """
-        if type(value) is str:
+        if isinstance(value, str):
             val = Path(value)
-        elif type(value) is Path:
+        elif isinstance(value, Path):
             val = value
         else:
             raise TypeError("Path is not from type 'Path'")

@@ -153,7 +153,7 @@ class MicroscopeBase(abc.ABC):
         :param value: The path value (Path or str).
         :return: A Path object.
         """
-        if type(value) is str:
+        if isinstance(value, str):
             val = Path(value)
         elif isinstance(value, Path):
             val = value

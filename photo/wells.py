@@ -25,7 +25,7 @@ class WellPos:
         :param pos: A tuple (row, col, [site]).
         :return: A WellPos instance.
         """
-        if type(pos) is not tuple:
+        if not isinstance(pos, tuple):
             raise TypeError("Pos is not tuple")
         if len(pos) == 3:
             site = pos[2]
@@ -33,7 +33,7 @@ class WellPos:
             site = 1
         return cls(row=pos[0], col=pos[1], site=site)
 
-    def samePos(self, other):
+    def same_pos(self, other):
         """
         Check if another WellPos instance refers to the same position.
 
