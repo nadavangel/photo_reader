@@ -1,21 +1,30 @@
+"""Module for base class and exception handling for microscope data processing."""
+
 import abc
+import logging
+import traceback
+import sys
+from pathlib import Path
+from typing import Tuple
 
 from photo.photo import Photo
 from photo.wells import WellPos, WellName
-from pathlib import Path
-import logging
-import traceback
-from typing import Tuple
-import sys
 
 logger = logging.getLogger("mylSplitToWells")
 
 
 class MicroscopeException(Exception):
+    """Exception raised for errors in microscope data processing."""
+
     pass
 
 
 def get_exception_location() -> Tuple[str, int]:
+    """
+    Get the filename and line number where an exception occurred.
+
+    :return: A tuple containing the filename and line number.
+    """
     exc_type, exc_value, exc_traceback = sys.exc_info()
 
     last_frame = traceback.extract_tb(exc_traceback)[-1]
@@ -29,22 +38,42 @@ def get_exception_location() -> Tuple[str, int]:
 
 
 class MicroscopeBase(abc.ABC):
+    """Abstract base class for different types of microscope data sources."""
+
     _path: Path
     _files_list: list[Path]
     _pos_photo: dict[WellPos, list[Photo]]
 
     def __init__(self, folder: Path | str):
+        """
+        Initialize the MicroscopeBase instance.
+
+        :param folder: The path to the folder containing microscope images.
+        """
         self.path = folder
         self._fill_files()
 
     def _fill_files(self):
+        """Populate the list of files from the source folder."""
         self._files_list = list(self.path.iterdir())
 
     @abc.abstractmethod
     def _match(self, pos_names: WellName | None = None):
+        """
+        Abstract method to match files to well positions.
+
+        :param pos_names: Optional well name mapping.
+        """
         pass
 
     def move(self, *args, **kwargs):
+        """
+        Move files to the destination directory with error handling.
+
+        :param args: Positional arguments for _move.
+        :param kwargs: Keyword arguments for _move.
+        :return: The destination directory path, or None if an error occurred.
+        """
         try:
             return self._move(*args, **kwargs)
         except MicroscopeException as e:
@@ -68,6 +97,16 @@ class MicroscopeBase(abc.ABC):
         pos_names: WellName | None = None,
         file_prefix: str = "",
     ):
+        """
+        Core logic for moving files to the destination.
+
+        :param dest: Destination directory path.
+        :param prefix: Optional prefix for files.
+        :param create_dubdir: Whether to create subdirectories for each position.
+        :param pos_names: Optional well name mapping.
+        :param file_prefix: Optional file prefix.
+        :return: The destination directory path.
+        """
         base_dest_dir = self.path_value(dest)
         if not base_dest_dir.is_dir():
             raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
@@ -103,10 +142,17 @@ class MicroscopeBase(abc.ABC):
 
     @property
     def path(self) -> Path:
+        """Get the source path."""
         return self._path
 
     @staticmethod
     def path_value(value: Path | str) -> Path:
+        """
+        Validate and convert a string or Path object to a Path object.
+
+        :param value: The path value (Path or str).
+        :return: A Path object.
+        """
         if type(value) is str:
             val = Path(value)
         elif isinstance(value, Path):
@@ -120,4 +166,9 @@ class MicroscopeBase(abc.ABC):
 
     @path.setter
     def path(self, value: Path | str):
+        """
+        Set the source path.
+
+        :param value: The source path (Path or str).
+        """
         self._path = self.path_value(value)

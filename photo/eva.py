@@ -1,3 +1,5 @@
+"""Module for processing Eva microscope image data."""
+
 import re
 from pathlib import Path
 
@@ -8,15 +10,29 @@ logger = logging.getLogger("mylSplitToWells")
 
 
 class Eva(MicroscopeBase):
+    """Represents data from an Eva microscope."""
+
     regEx_file_name = r"(?P<row>[A-Za-z]+)(?P<col>\d+)[-]*W(?P<well>\d+)[-]*P(?P<pos>\d+)[-]*Z(?P<z>\d+)[-]*T(?P<time>\d+)[-]*(?P<channel>\w+).tif"
 
     def __init__(self, folder: Path | str):
+        """
+        Initialize the Eva instance.
+
+        :param folder: The path to the folder containing microscope images.
+        """
         data_folder = str(self.path_value(folder) / "data")
         logger.debug(f"Initializing Eva with data folder: {data_folder}")
         super().__init__(folder=data_folder)
 
     @staticmethod
     def _parse_file_name(line: str, pos_names: WellName | None = None):
+        """
+        Parse a filename to extract position information.
+
+        :param line: The filename string.
+        :param pos_names: Optional well name mapping.
+        :return: A tuple (success_flag, position_or_none).
+        """
         logger.debug(f"Parsing file name: {line}")
         reg = re.match(Eva.regEx_file_name, string=line)
         if reg is None:
@@ -31,6 +47,12 @@ class Eva(MicroscopeBase):
         return (True, pos)
 
     def _match(self, pos_names: WellName | None = None):
+        """
+        Match files in the source folder to well positions.
+
+        :param pos_names: Optional well name mapping.
+        :return: A list of skipped files.
+        """
         self._pos_photo = {}
         skiped_files = []
         logger.info("Matching files to positions")

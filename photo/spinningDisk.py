@@ -1,3 +1,5 @@
+"""Module for processing Spinning Disk microscope image data."""
+
 import re
 from pathlib import Path
 from photo import MicroscopeBase, MicroscopeException, WellPos, Photo, WellName
@@ -8,16 +10,24 @@ logger = logging.getLogger("mylSplitToWells")
 
 
 class SpinningDisk(MicroscopeBase):
+    """Represents data from a Spinning Disk microscope."""
+
     _nd_files: list[Path]
     regEx_nd = r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$"
     regEx_file_name = r"^(?P<batch>[\w\s\-\_]*)_.*_s(?P<stage>\d+).*\.(tif|stk)$"
 
     def __init__(self, folder: Path | str):
+        """
+        Initialize the SpinningDisk instance.
+
+        :param folder: The path to the folder containing microscope images.
+        """
         logger.debug(f"Initializing SpinningDisk with folder: {folder}")
         super().__init__(folder=folder)
         self._find_nd_file()
 
     def _find_nd_file(self):
+        """Find and process .nd files in the source directory."""
         logger.info("Searching for .nd files")
         arr = [x for x in self._files_list if x.is_file() and x.suffix == ".nd"]
         if len(arr) == 0:
@@ -30,6 +40,13 @@ class SpinningDisk(MicroscopeBase):
 
     @staticmethod
     def _parse_line(line: str, pos_names: WellName | None = None):
+        """
+        Parse a line from an .nd file to extract position information.
+
+        :param line: The line string.
+        :param pos_names: Optional well name mapping.
+        :return: A tuple (success_flag, stage_number, position_or_none).
+        """
         logger.debug(f"Parsing line: {line}")
         reg = re.match(SpinningDisk.regEx_nd, string=line)
         if reg is None:
@@ -45,6 +62,12 @@ class SpinningDisk(MicroscopeBase):
 
     @staticmethod
     def _parse_file_name(line: str):
+        """
+        Parse a filename to extract batch and stage information.
+
+        :param line: The filename string.
+        :return: A tuple (success_flag, stage_number, batch_name).
+        """
         logger.debug(f"Parsing file name: {line}")
         reg = re.match(SpinningDisk.regEx_file_name, string=line)
         if reg is None:
@@ -60,6 +83,12 @@ class SpinningDisk(MicroscopeBase):
         return (parsed_successfully, int(di["stage"]), di["batch"])
 
     def _match(self, pos_names: WellName | None = None):
+        """
+        Match files in the source folder to well positions based on .nd file data.
+
+        :param pos_names: Optional well name mapping.
+        :return: A list of skipped files.
+        """
         logger.info("Matching positions with photos")
         stage_dict = {}
         self._pos_photo = {}
