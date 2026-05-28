@@ -51,6 +51,7 @@ class MicroscopeBase(abc.ABC):
         :param folder: The path to the folder containing microscope images.
         """
         self.path = folder
+        self._pos_photo = {}
         self._fill_files()
 
     def _fill_files(self):
