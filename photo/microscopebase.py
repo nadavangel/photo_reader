@@ -16,8 +16,6 @@ logger = logging.getLogger("mylSplitToWells")
 class MicroscopeException(Exception):
     """Exception raised for errors in microscope data processing."""
 
-    pass
-
 
 def get_exception_location() -> Tuple[str, int]:
     """
@@ -25,7 +23,7 @@ def get_exception_location() -> Tuple[str, int]:
 
     :return: A tuple containing the filename and line number.
     """
-    exc_type, exc_value, exc_traceback = sys.exc_info()
+    _ , _, exc_traceback = sys.exc_info()
 
     last_frame = traceback.extract_tb(exc_traceback)[-1]
 
@@ -65,9 +63,7 @@ class MicroscopeBase(abc.ABC):
 
         :param pos_names: Optional well name mapping.
         """
-        pass
 
-    def move(self, *args, **kwargs):
         """
         Move files to the destination directory with error handling.
 

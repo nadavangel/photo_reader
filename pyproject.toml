@@ -1,5 +1,5 @@
 [tool.ruff]
-line-length = 100  
+line-length = 150  
 
 [tool.ruff.lint]
 ignore = [
@@ -16,4 +16,4 @@ disable = [
 ]
 
 [tool.pylint.format]
-max-line-length = 100  
+max-line-length = 150  

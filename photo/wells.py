@@ -75,7 +75,6 @@ class WellName:
     @abc.abstractmethod
     def _fill(self):
         """Abstract method to populate the well name mapping."""
-        pass
 
 
 class WellNameTxt(WellName):
