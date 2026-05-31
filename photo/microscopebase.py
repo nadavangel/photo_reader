@@ -20,7 +20,7 @@ class MicroscopeException(Exception):
     """Exception raised for errors in microscope data processing."""
 
 
-def get_exception_location() -> typing.Tuple[str, int]:
+def get_exception_location() -> typing.Tuple[str, typing.Optional[int]]:
     """
     Get the filename and line number where an exception occurred.
 

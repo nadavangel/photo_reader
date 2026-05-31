@@ -205,7 +205,7 @@ def main() -> int:
 
     # Initialize microscope
     try:
-        mic = Microscope(folder=folder)
+        mic = Microscope(folder=str(folder))
         logger.info(f"Initialized microscope from folder: {folder}")
     except MicroscopeException as e:
         ex_file, ex_line = get_exception_location()

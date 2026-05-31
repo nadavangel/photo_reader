@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+import typing
 from pathlib import Path
 
 from photo.microscopebase import MicroscopeBase
@@ -19,7 +20,7 @@ class Eva(MicroscopeBase):
 
     regEx_file_name = r"(?P<row>[A-Za-z]+)(?P<col>\d+)[-]*W(?P<well>\d+)[-]*P(?P<pos>\d+)[-]*Z(?P<z>\d+)[-]*T(?P<time>\d+)[-]*(?P<channel>\w+).tif"
 
-    def __init__(self, folder: Path or str):
+    def __init__(self, folder: typing.Union[Path, str]):
         """
         Initialize the Eva instance.
 
@@ -30,7 +31,7 @@ class Eva(MicroscopeBase):
         super().__init__(folder=data_folder)
 
     @staticmethod
-    def _parse_file_name(line: str, pos_names: WellName or None = None):
+    def _parse_file_name(line: str, pos_names: typing.Optional[WellName] = None):
         """
         Parse a filename to extract position information.
 
@@ -51,7 +52,7 @@ class Eva(MicroscopeBase):
         logger.debug(f"Parsed position: {pos}")
         return (True, pos)
 
-    def _match(self, pos_names: WellName or None = None):
+    def _match(self, pos_names: typing.Optional[WellName] = None):
         """
         Match files in the source folder to well positions.
 
