@@ -10,11 +10,11 @@ resolution-markers = [
 
 [[package]]
 name = "altgraph"
-version = "0.17.3"
+version = "0.17.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5a/13/a7cfa43856a7b8e4894848ec8f71cd9e1ac461e51802391a3e2101c60ed6/altgraph-0.17.3.tar.gz", hash = "sha256:ad33358114df7c9416cdb8fa1eaa5852166c505118717021c6a8c7c7abbd03dd", size = 48328, upload-time = "2022-09-25T17:42:25.84Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/f8/97fdf103f38fed6792a1601dbc16cc8aac56e7459a9fff08c812d8ae177a/altgraph-0.17.5.tar.gz", hash = "sha256:c87b395dd12fabde9c99573a9749d67da8d29ef9de0125c7f536699b4a9bc9e7", size = 48428, upload-time = "2025-11-21T20:35:50.583Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/ff/88d277ba936d226b0f6dbd6711145f90fcfeed3aa9455c1c2f62c8ffec5b/altgraph-0.17.3-py2.py3-none-any.whl", hash = "sha256:c8ac1ca6772207179ed8003ce7687757c04b0b71536f81e2ac5755c6226458fe", size = 21241, upload-time = "2022-09-25T17:42:23.715Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/ba/000a1996d4308bc65120167c21241a3b205464a2e0b58deda26ae8ac21d1/altgraph-0.17.5-py2.py3-none-any.whl", hash = "sha256:f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597", size = 21228, upload-time = "2025-11-21T20:35:49.444Z" },
 ]
 
 [[package]]
@@ -463,7 +463,7 @@ dev = [
 
 [package.metadata.requires-dev]
 build = [
-    { name = "altgraph", specifier = "==0.17.3" },
+    { name = "altgraph", specifier = "==0.17.5" },
     { name = "pefile", specifier = "==2023.2.7" },
     { name = "pillow", marker = "sys_platform == 'darwin'", specifier = ">=10.0.0" },
     { name = "pyinstaller", specifier = "==6.15.0" },
