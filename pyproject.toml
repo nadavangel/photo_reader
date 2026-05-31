@@ -51,6 +51,7 @@ source = ["photo", "window", "split_to_wells"]
 
 [tool.coverage.report]
 show_missing = true
+fail_under = 100
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
