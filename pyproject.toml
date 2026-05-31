@@ -1,3 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo_reader"
+version = "0.1.0"
+description = "A description of your project"
+dependencies = []
+
+[project.optional-dependencies]
+build = [
+    "altgraph==0.17.3",
+    "pefile==2023.2.7",
+    "pyinstaller==6.15.0",
+    "pywin32-ctypes==0.2.2",
+]
+
 [tool.ruff]
 line-length = 150  
 
@@ -10,9 +28,9 @@ ignore = [
 [tool.pylint.messages_control]
 disable = [
     "logging-fstring-interpolation",
-	"too-many-arguments",
-	"too-many-positional-arguments",
-	"too-many-locals",
+        "too-many-arguments",
+        "too-many-positional-arguments",
+        "too-many-locals",
     "too-many-branches",
     "too-many-return-statements",
     "too-many-statements",
@@ -23,5 +41,19 @@ disable = [
 [tool.pylint.basic]
 ignored-modules = ["tkinter"]
 
-[tool.pylint.format]
-max-line-length = 150  
+[tool.pytest.ini_options]
+addopts = "--cov=photo --cov=window --cov=split_to_wells --cov-report=term-missing --cov-branch"
+pythonpath = "."
+
+[tool.coverage.run]
+branch = true
+source = ["photo", "window", "split_to_wells"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
