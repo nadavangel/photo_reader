@@ -308,8 +308,12 @@ cd photo_reader
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install development dependencies (if any)
+# Install development dependencies
 pip install -r requirements.txt
+pip install pre-commit
+
+# Install pre-commit hooks
+pre-commit install
 ```
 
 ### Code Style
