@@ -37,7 +37,7 @@ A Python application for splitting microscope images from Spinning-Disc and Eva 
 
 ### Prerequisites
 
-- Python 3.12 or higher
+- Python 3.10 or higher
 - [uv](https://github.com/astral-sh/uv) (recommended for dependency management)
 
 ### Quick Start
