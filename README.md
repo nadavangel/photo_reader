@@ -1,5 +1,9 @@
 # Split To Wells
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml)
+[![Pylint](https://github.com/nadavangel/photo_reader/actions/workflows/pylint.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/pylint.yml)
+[![Ruff](https://github.com/nadavangel/photo_reader/actions/workflows/ruff.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/ruff.yml)
 [![Mypy](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml)
 
 A Python application for splitting microscope images from Spinning-Disc and Eva microscope outputs into individual well folders. Supports both command-line and graphical user interfaces.
