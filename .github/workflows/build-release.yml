@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
       
       - name: Install dependencies
-        run: pip install -r requirements-build.txt
+        run: pip install ".[build]"
       
       - name: Build exe
         run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
@@ -43,7 +43,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install -r requirements-build.txt
+          pip install ".[build]"
           pip install Pillow==12.2.0
       - name: Build app
         run: |
@@ -69,7 +69,7 @@ jobs:
           python-version: '3.11'
       
       - name: Install dependencies
-        run: pip install -r requirements-build.txt
+        run: pip install ".[build]"
       
       - name: Build executable
         run: pyinstaller --clean -F --name splitToWells window.py
