@@ -19,7 +19,6 @@ dev = [
     "mypy>=1.15.0",
 ]
 build = [
-    "setuptools<80.0.0",   # This brings back pkg_resources safely
     "altgraph==0.17.5",
     "pefile==2023.2.7",
     "pyinstaller==6.20.0",
