@@ -1,5 +1,7 @@
 # Split To Wells
 
+[![Mypy](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml)
+
 A Python application for splitting microscope images from Spinning-Disc and Eva microscope outputs into individual well folders. Supports both command-line and graphical user interfaces.
 
 ## Table of Contents
@@ -30,10 +32,10 @@ A Python application for splitting microscope images from Spinning-Disc and Eva 
 
 ### Prerequisites
 
-- Python 3.7 or higher
-- tkinter (usually included with Python)
+- Python 3.12 or higher
+- [uv](https://github.com/astral-sh/uv) (recommended for dependency management)
 
-### Standard Installation
+### Quick Start
 
 1. Clone the repository:
 ```bash
@@ -41,51 +43,18 @@ git clone https://github.com/nadavangel/photo_reader.git
 cd photo_reader
 ```
 
-2. No additional dependencies are required! The application uses only Python standard library packages.
-
-### Optional: Create a Virtual Environment
-
-It's recommended to use a virtual environment:
-
+2. Install dependencies and set up the project environment using `uv`:
 ```bash
-python -m venv venv
-
-# On Windows:
-venv\Scripts\activate
-
-# On macOS/Linux:
-source venv/bin/activate
+uv sync
 ```
 
-## Runtime Requirements
 
-### Core Requirements
-- Python 3.7+
-- tkinter (usually included with Python)
+## Development Setup
 
-### Platform-Specific Installation
+To ensure code quality and consistency, install the pre-commit hooks:
 
-#### macOS
-If you don't have tkinter installed:
 ```bash
-# Using Homebrew:
-brew install python-tk@3.11  # Replace 3.11 with your Python version
-
-# Or using conda:
-conda install tk
-```
-
-#### Windows
-tkinter is included with the standard Python installer. No additional installation needed.
-
-#### Linux (Ubuntu/Debian)
-```bash
-sudo apt-get install python3-tk
-```
-
-#### Linux (Fedora/RHEL)
-```bash
-sudo dnf install python3-tkinter
+uv run pre-commit install
 ```
 
 ## Usage
@@ -95,7 +64,7 @@ sudo dnf install python3-tkinter
 Launch the graphical user interface:
 
 ```bash
-python window.py
+uv run python window.py
 ```
 
 **GUI Features:**
@@ -120,7 +89,7 @@ python window.py
 Run the command-line interface with various options:
 
 ```bash
-python splitToWells.py [OPTIONS]
+uv run python split_to_wells.py [OPTIONS]
 ```
 
 **Options:**
@@ -137,23 +106,23 @@ python splitToWells.py [OPTIONS]
 
 Basic usage (interactive stdin prompts):
 ```bash
-python splitToWells.py
+uv run python split_to_wells.py
 ```
 The application will prompt you to enter paths and settings via stdin.
 
 With all parameters specified:
 ```bash
-python splitToWells.py -f "/path/to/source" -d "/path/to/dest" -n "experiment_01" -p "img_"
+uv run python split_to_wells.py -f "/path/to/source" -d "/path/to/dest" -n "experiment_01" -p "img_"
 ```
 
 With material information:
 ```bash
-python splitToWells.py -f "/path/to/source" -d "/path/to/dest" -m "A1	control" --verbose
+uv run python split_to_wells.py -f "/path/to/source" -d "/path/to/dest" -m "A1	control" --verbose
 ```
 
 Without creating subdirectories:
 ```bash
-python splitToWells.py -f "/path/to/source" -d "/path/to/dest" --no-subdir -n "flat_output"
+uv run python split_to_wells.py -f "/path/to/source" -d "/path/to/dest" --no-subdir -n "flat_output"
 ```
 
 **CLI and GUI Feature Parity:**
@@ -173,7 +142,7 @@ Both the CLI and GUI provide equivalent functionality:
 
 **CLI Interactive Mode:**
 
-When running `python splitToWells.py` without options, the CLI will prompt you for input via stdin:
+When running `uv run python split_to_wells.py` without options, the CLI will prompt you for input via stdin:
 
 ```
 Please select source (plate/Spinning disc) folder:
@@ -226,7 +195,7 @@ The executable will be created in the `dist/` folder.
 **Running the Application:**
 ```bash
 python window.py      # GUI mode
-python splitToWells.py  # CLI mode
+uv run python split_to_wells.py  # CLI mode
 ```
 
 **Building Executables:**
@@ -249,7 +218,7 @@ pyinstaller splitToWells.spec
 **Running the Application:**
 ```bash
 python window.py      # GUI mode
-python splitToWells.py  # CLI mode
+uv run python split_to_wells.py  # CLI mode
 ```
 
 **Building Executables:**
@@ -386,7 +355,7 @@ Enable verbose logging to troubleshoot issues:
 
 ```bash
 # CLI mode with debug logging:
-python splitToWells.py -v
+uv run python split_to_wells.py -v
 
 # GUI mode debug logging:
 # Debug logs are automatically saved to SplitToWells.log in the current directory

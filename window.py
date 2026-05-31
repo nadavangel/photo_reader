@@ -10,6 +10,7 @@ import logging
 import sys
 import threading
 import tkinter as tk
+import typing
 from logging import FileHandler
 from tkinter import DISABLED, END, NORMAL, SEL, WORD, filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
@@ -235,7 +236,7 @@ class App(tk.Tk):
     Manages the UI layout, configuration loading/saving, and the file splitting process.
     """
 
-    def __init__(self, cfg: configparser.ConfigParser = None):
+    def __init__(self, cfg: typing.Optional[configparser.ConfigParser] = None):
         """
         Initialize the App window.
 
@@ -243,7 +244,7 @@ class App(tk.Tk):
             cfg: The configuration object to load settings from.
         """
         super().__init__()
-        self.resizable(0, 0)
+        self.resizable(False, False)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self._cfg = cfg
@@ -371,6 +372,9 @@ class App(tk.Tk):
         """
         Save the current UI state to the configuration file.
         """
+        if self._cfg is None:
+            return
+
         if "Settings" not in self._cfg:
             self._cfg["Settings"] = {}
         self._cfg["Settings"]["src_folder"] = self.ui.src_folder.folder_path

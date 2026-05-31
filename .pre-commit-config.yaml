@@ -1,12 +1,26 @@
 repos:
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.9.9
+- repo: local
   hooks:
     - id: ruff
-      args: [--fix, --exit-non-zero-on-fix]
+      name: ruff
+      entry: uv run ruff check --fix --exit-non-zero-on-fix
+      language: system
+      types: [python]
     - id: ruff-format
-- repo: https://github.com/pre-commit/mirrors-pylint
-  rev: v3.3.4
+      name: ruff-format
+      entry: uv run ruff format
+      language: system
+      types: [python]
+    - id: mypy
+      name: mypy
+      entry: uv run mypy
+      language: system
+      types: [python]
+- repo: local
   hooks:
     - id: pylint
+      name: pylint
+      entry: uv run pylint
+      language: system
+      types: [python]
       args: [--rcfile=pyproject.toml]

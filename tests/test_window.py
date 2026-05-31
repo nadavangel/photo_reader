@@ -132,7 +132,13 @@ def test_app_methods(mock_info):
 
     # Test _save_configuration and on_closing
     with patch("window._save_cfg") as mock_save:
+        # Case 0: cfg is None
+        app._cfg = None
+        app._save_configuration()
+        mock_save.assert_not_called()
+
         # Case 1: Settings already exists (covered by initial cfg)
+        app._cfg = cfg
         app._save_configuration()
 
         # Case 2: Settings missing
