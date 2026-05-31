@@ -11,13 +11,13 @@ graph TD
     CLI[split_to_wells.py]
 
     %% Main Logic Modules
-    Base[photo/microscopebase.py]
-    Spinning[photo/spinning_disk.py]
-    Eva[photo/eva.py]
-    Photo[photo/photo.py]
-    Wells[photo/wells.py]
-    Validators[photo/validators.py]
-    Utils[photo/utils.py]
+    Base[photo_microscopebase]
+    Spinning[photo_spinning_disk]
+    Eva[photo_eva]
+    Photo[photo_photo]
+    Wells[photo_wells]
+    Validators[photo_validators]
+    Utils[photo_utils]
 
     %% Relationships
     GUI --> Base
