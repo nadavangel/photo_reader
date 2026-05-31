@@ -27,9 +27,14 @@ jobs:
     - name: Set up Python ${{ matrix.python-version }}
       run: uv python install ${{ matrix.python-version }}
 
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+
     - name: Run tests with pytest
       run: |
-        uv run --group dev pytest --cov-report=xml
+        xvfb-run uv run --group dev pytest --cov-report=xml
 
     - name: Display logs on failure
       if: failure()
