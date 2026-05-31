@@ -1,9 +1,11 @@
 """Module for handling well position and name mapping."""
 
-import abc
-from dataclasses import field, dataclass
+from __future__ import annotations
 
+import abc
 import logging
+import typing
+from dataclasses import dataclass, field
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -25,7 +27,7 @@ class WellPos:
         :param pos: A tuple (row, col, [site]).
         :return: A WellPos instance.
         """
-        if type(pos) is not tuple:
+        if not isinstance(pos, tuple):
             raise TypeError("Pos is not tuple")
         if len(pos) == 3:
             site = pos[2]
@@ -33,7 +35,7 @@ class WellPos:
             site = 1
         return cls(row=pos[0], col=pos[1], site=site)
 
-    def samePos(self, other):
+    def same_pos(self, other):
         """
         Check if another WellPos instance refers to the same position.
 
@@ -56,7 +58,7 @@ class WellPos:
 class WellName:
     """Abstract base class for well name mapping."""
 
-    _info: dict[str, str]
+    _info: typing.Dict[str, str]
 
     def __init__(self):
         super().__init__()
@@ -75,7 +77,6 @@ class WellName:
     @abc.abstractmethod
     def _fill(self):
         """Abstract method to populate the well name mapping."""
-        pass
 
 
 class WellNameTxt(WellName):

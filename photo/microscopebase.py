@@ -1,14 +1,17 @@
 """Module for base class and exception handling for microscope data processing."""
 
+from __future__ import annotations
+
 import abc
 import logging
-import traceback
 import sys
+import traceback
+import typing
 from pathlib import Path
-from typing import Tuple
 
 from photo.photo import Photo
-from photo.wells import WellPos, WellName
+from photo.validators import validate_directory
+from photo.wells import WellName, WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -16,16 +19,14 @@ logger = logging.getLogger("mylSplitToWells")
 class MicroscopeException(Exception):
     """Exception raised for errors in microscope data processing."""
 
-    pass
 
-
-def get_exception_location() -> Tuple[str, int]:
+def get_exception_location() -> typing.Tuple[str, int]:
     """
     Get the filename and line number where an exception occurred.
 
     :return: A tuple containing the filename and line number.
     """
-    exc_type, exc_value, exc_traceback = sys.exc_info()
+    _, _, exc_traceback = sys.exc_info()
 
     last_frame = traceback.extract_tb(exc_traceback)[-1]
 
@@ -41,16 +42,17 @@ class MicroscopeBase(abc.ABC):
     """Abstract base class for different types of microscope data sources."""
 
     _path: Path
-    _files_list: list[Path]
-    _pos_photo: dict[WellPos, list[Photo]]
+    _files_list: typing.List[Path]
+    _pos_photo: typing.Dict[WellPos, typing.List[Photo]]
 
-    def __init__(self, folder: Path | str):
+    def __init__(self, folder: typing.Union[Path, str]):
         """
         Initialize the MicroscopeBase instance.
 
         :param folder: The path to the folder containing microscope images.
         """
         self.path = folder
+        self._pos_photo = {}
         self._fill_files()
 
     def _fill_files(self):
@@ -58,13 +60,24 @@ class MicroscopeBase(abc.ABC):
         self._files_list = list(self.path.iterdir())
 
     @abc.abstractmethod
-    def _match(self, pos_names: WellName | None = None):
+    def _match(self, pos_names: typing.Optional[WellName] = None):
         """
         Abstract method to match files to well positions.
 
         :param pos_names: Optional well name mapping.
         """
-        pass
+
+    def _add_photo(self, pos: WellPos, photo: Photo):
+        """
+        Add a photo to the internal position-to-photo mapping.
+
+        :param pos: The well position.
+        :param photo: The photo object.
+        """
+        if pos not in self._pos_photo:
+            self._pos_photo[pos] = [photo]
+        else:
+            self._pos_photo[pos].append(photo)
 
     def move(self, *args, **kwargs):
         """
@@ -78,23 +91,19 @@ class MicroscopeBase(abc.ABC):
             return self._move(*args, **kwargs)
         except MicroscopeException as e:
             ex_file, ex_line = get_exception_location()
-            logger.error(
-                f"Error occurred while moving files: {e} (at {ex_file}:{ex_line})"
-            )
+            logger.error(f"Error occurred while moving files: {e} (at {ex_file}:{ex_line})")
             return None
         except TypeError as e:
             ex_file, ex_line = get_exception_location()
-            logger.error(
-                f"Type error occurred while moving files: {e} (at {ex_file}:{ex_line})"
-            )
+            logger.error(f"Type error occurred while moving files: {e} (at {ex_file}:{ex_line})")
             return None
 
     def _move(
         self,
-        dest: Path | str,
+        dest: typing.Union[Path, str],
         prefix: str = "",
         create_dubdir: bool = True,
-        pos_names: WellName | None = None,
+        pos_names: typing.Optional[WellName] = None,
         file_prefix: str = "",
     ):
         """
@@ -107,7 +116,7 @@ class MicroscopeBase(abc.ABC):
         :param file_prefix: Optional file prefix.
         :return: The destination directory path.
         """
-        base_dest_dir = self.path_value(dest)
+        base_dest_dir = validate_directory(dest)
         if not base_dest_dir.is_dir():
             raise MicroscopeException(f"{str(base_dest_dir)} is not a folder")
         dest_dir = base_dest_dir.absolute() / "out"
@@ -115,7 +124,7 @@ class MicroscopeBase(abc.ABC):
         logger.info(f"Create {str(dest_dir)}")
         skipped_files = self._match(pos_names)
 
-        for pos in self._pos_photo:
+        for pos, photos in self._pos_photo.items():
             if create_dubdir:
                 pos_dir = dest_dir / str(pos)
                 pos_dir.mkdir(parents=True, exist_ok=True)
@@ -128,15 +137,13 @@ class MicroscopeBase(abc.ABC):
             if file_prefix:
                 pos_prefix = f"{file_prefix}_{pos_prefix}"
 
-            for file in self._pos_photo[pos]:
-                file.copy(pos_dir, prefix=pos_prefix)
-                logger.info(f'Copy "{str(file.path.name)}" to {str(pos)}')
+            for photo in photos:
+                photo.copy(pos_dir, prefix=pos_prefix)
+                logger.info(f'Copy "{str(photo.path.name)}" to {str(pos)}')
 
         if len(skipped_files) > 0:
             skipped_files_names = ", ".join([file.name for file in skipped_files])
-            logger.warning(
-                f"Skipped {len(skipped_files)} file{'s' if len(skipped_files) > 1 else ''}: {skipped_files_names}"
-            )
+            logger.warning(f"Skipped {len(skipped_files)} file{'s' if len(skipped_files) > 1 else ''}: {skipped_files_names}")
 
         return dest_dir
 
@@ -145,30 +152,11 @@ class MicroscopeBase(abc.ABC):
         """Get the source path."""
         return self._path
 
-    @staticmethod
-    def path_value(value: Path | str) -> Path:
-        """
-        Validate and convert a string or Path object to a Path object.
-
-        :param value: The path value (Path or str).
-        :return: A Path object.
-        """
-        if type(value) is str:
-            val = Path(value)
-        elif isinstance(value, Path):
-            val = value
-        else:
-            raise TypeError("Path is not from type 'Path'")
-
-        if not val.is_dir():
-            raise TypeError(f'Path "{str(val)}", is not a dirctory.')
-        return val
-
     @path.setter
-    def path(self, value: Path | str):
+    def path(self, value: typing.Union[Path, str]):
         """
         Set the source path.
 
         :param value: The source path (Path or str).
         """
-        self._path = self.path_value(value)
+        self._path = validate_directory(value)

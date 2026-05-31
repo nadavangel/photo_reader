@@ -1,16 +1,32 @@
+"""Module for command-line interface for splitting microscope images into well folders."""
+
+from __future__ import annotations
+
+import argparse
 import logging
+import pathlib
 import sys
 import time
 from datetime import timedelta
 
-import photo
-from photo import WellNameTxt, MicroscopeException, get_exception_location
-import argparse
-import pathlib
+from photo.microscopebase import MicroscopeException, get_exception_location
+from photo.utils import Microscope
+from photo.wells import WellNameTxt
 
 
 def get_folder_input(prompt: str) -> pathlib.Path:
-    """Get folder path from stdin input with validation."""
+    """
+    Get a valid folder path from standard input.
+
+    Prompts the user with the given prompt, validates that the input is not empty,
+    exists, and is a directory. Loops until a valid path is provided.
+
+    Args:
+        prompt: The message to display to the user.
+
+    Returns:
+        A pathlib.Path object representing the validated directory path.
+    """
     while True:
         path_input = input(prompt).strip()
         if not path_input:
@@ -30,7 +46,19 @@ def get_folder_input(prompt: str) -> pathlib.Path:
 
 
 def get_text_input(prompt: str, required: bool = False) -> str:
-    """Get text input from stdin."""
+    """
+    Get text input from standard input.
+
+    Prompts the user with the given prompt and ensures that if required,
+    the input is not empty.
+
+    Args:
+        prompt: The message to display to the user.
+        required: Whether the input field is mandatory.
+
+    Returns:
+        The stripped text input from the user.
+    """
     while True:
         value = input(prompt).strip()
         if not value and required:
@@ -40,7 +68,19 @@ def get_text_input(prompt: str, required: bool = False) -> str:
 
 
 def get_yes_no_input(prompt: str, default: bool = True) -> bool:
-    """Get yes/no input from stdin."""
+    """
+    Get a yes/no response from standard input.
+
+    Prompts the user with the given prompt and a default value indicator.
+    Accepts 'y', 'yes', 'n', or 'no' (case-insensitive).
+
+    Args:
+        prompt: The message to display to the user.
+        default: The default boolean value if the user just presses Enter.
+
+    Returns:
+        True if the user selects yes, False if the user selects no.
+    """
     default_str = "Y/n" if default else "y/N"
     while True:
         response = input(f"{prompt} [{default_str}]: ").strip().lower()
@@ -53,18 +93,20 @@ def get_yes_no_input(prompt: str, default: bool = True) -> bool:
         print("Error: Please enter 'y' (yes) or 'n' (no)")
 
 
-def main() -> int:  # pragma: no cover
+def main() -> int:
+    """
+    Main entry point for the SplitToWells CLI application.
 
-    parser = argparse.ArgumentParser(
-        prog="SplitToWells", description="Split microscope images to well folders"
-    )
-    parser.add_argument(
-        "-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)"
-    )
+    Parses command line arguments, configures logging, gathers necessary input,
+    initializes the microscope processor, and executes the file splitting operation.
+
+    Returns:
+        0 if the process completes successfully, 1 otherwise.
+    """
+    parser = argparse.ArgumentParser(description="Split microscope images into well folders.")
+    parser.add_argument("-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)")
     parser.add_argument("-d", "--dest", type=pathlib.Path, help="Destination folder")
-    parser.add_argument(
-        "-n", "--name", type=str, default="", help="Name/prefix for the output"
-    )
+    parser.add_argument("-n", "--name", type=str, default="", help="Name/prefix for the output")
     parser.add_argument(
         "-m",
         "--material",
@@ -72,9 +114,7 @@ def main() -> int:  # pragma: no cover
         default="",
         help="Material info with well names (tab-separated: position\\tname)",
     )
-    parser.add_argument(
-        "-p", "--file-prefix", type=str, default="", help="File prefix for output files"
-    )
+    parser.add_argument("-p", "--file-prefix", type=str, default="", help="File prefix for output files")
     parser.add_argument(
         "--no-subdir",
         action="store_true",
@@ -146,7 +186,7 @@ def main() -> int:  # pragma: no cover
         try:
             well_name = WellNameTxt(buff=material_text)
             logger.debug(f"Parsed material info: {material_text}")
-        except Exception as e:
+        except (ValueError, KeyError, TypeError) as e:
             ex_file, ex_line = get_exception_location()
             logger.error(f"Error parsing material info: {e} (at {ex_file}:{ex_line})")
             return 1
@@ -161,25 +201,19 @@ def main() -> int:  # pragma: no cover
     if args.no_subdir:
         create_subdir = False
     else:
-        create_subdir = get_yes_no_input(
-            "Create subdirectories for each position?", default=True
-        )
+        create_subdir = get_yes_no_input("Create subdirectories for each position?", default=True)
 
     # Initialize microscope
     try:
-        mic = photo.Microscope(folder=folder)
+        mic = Microscope(folder=folder)
         logger.info(f"Initialized microscope from folder: {folder}")
     except MicroscopeException as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f'Error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})'
-        )
+        logger.error(f'Error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})')
         return 1
     except TypeError as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})'
-        )
+        logger.error(f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})')
         return 1
 
     # Process files
@@ -195,19 +229,15 @@ def main() -> int:  # pragma: no cover
         end = time.time()
         total_time = timedelta(seconds=end - start)
 
-        logger.info(
-            f"Done, it took {str(total_time)}, the files are at {str(dest_result)}"
-        )
+        logger.info(f"Done, it took {str(total_time)}, the files are at {str(dest_result)}")
         return 0
-    except Exception as e:
+    except (MicroscopeException, TypeError, OSError) as e:
         ex_file, ex_line = get_exception_location()
-        logger.error(
-            f"Error occurred while processing files: {e} (at {ex_file}:{ex_line})"
-        )
+        logger.error(f"Error occurred while processing files: {e} (at {ex_file}:{ex_line})")
         return 1
 
 
 if __name__ == "__main__":
-    re = main()
+    EXIT_CODE = main()
     input("Press Enter to exit")
-    sys.exit(re)
+    sys.exit(EXIT_CODE)

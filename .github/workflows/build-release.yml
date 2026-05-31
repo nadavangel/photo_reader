@@ -13,16 +13,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'
-      
-      - name: Install dependencies
-        run: pip install -r requirements-build.txt
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
       
       - name: Build exe
-        run: pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
@@ -36,18 +36,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
       
-      - name: Install dependencies
-        run: |
-          pip install -r requirements-build.txt
-          pip install Pillow==12.2.0
       - name: Build app
         run: |
-          pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
+          uv run --group build pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
           cd dist
           zip -r splitToWells_mac.zip splitToWells.app
       
@@ -63,16 +62,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: '3.11'
-      
-      - name: Install dependencies
-        run: pip install -r requirements-build.txt
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.11
       
       - name: Build executable
-        run: pyinstaller --clean -F --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3

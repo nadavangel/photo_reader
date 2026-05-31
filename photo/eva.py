@@ -1,10 +1,15 @@
 """Module for processing Eva microscope image data."""
 
+from __future__ import annotations
+
+import logging
 import re
 from pathlib import Path
 
-from photo import MicroscopeBase, WellPos, Photo, WellName
-import logging
+from photo.microscopebase import MicroscopeBase
+from photo.photo import Photo
+from photo.validators import validate_directory
+from photo.wells import WellName, WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -14,18 +19,18 @@ class Eva(MicroscopeBase):
 
     regEx_file_name = r"(?P<row>[A-Za-z]+)(?P<col>\d+)[-]*W(?P<well>\d+)[-]*P(?P<pos>\d+)[-]*Z(?P<z>\d+)[-]*T(?P<time>\d+)[-]*(?P<channel>\w+).tif"
 
-    def __init__(self, folder: Path | str):
+    def __init__(self, folder: Path or str):
         """
         Initialize the Eva instance.
 
         :param folder: The path to the folder containing microscope images.
         """
-        data_folder = str(self.path_value(folder) / "data")
+        data_folder = str(validate_directory(folder) / "data")
         logger.debug(f"Initializing Eva with data folder: {data_folder}")
         super().__init__(folder=data_folder)
 
     @staticmethod
-    def _parse_file_name(line: str, pos_names: WellName | None = None):
+    def _parse_file_name(line: str, pos_names: WellName or None = None):
         """
         Parse a filename to extract position information.
 
@@ -46,7 +51,7 @@ class Eva(MicroscopeBase):
         logger.debug(f"Parsed position: {pos}")
         return (True, pos)
 
-    def _match(self, pos_names: WellName | None = None):
+    def _match(self, pos_names: WellName or None = None):
         """
         Match files in the source folder to well positions.
 
@@ -64,11 +69,7 @@ class Eva(MicroscopeBase):
             file_name = file.name.strip()
             suc, pos = self._parse_file_name(file_name, pos_names=pos_names)
             if suc:
-                pic = Photo(path=file, pos=pos)
-                if pos not in self._pos_photo:
-                    self._pos_photo[pos] = [pic]
-                else:
-                    self._pos_photo[pos].append(pic)
+                self._add_photo(pos, Photo(path=file, pos=pos))
                 logger.debug(f"Matched file {file_name} to position {pos}")
             else:
                 logger.warning(f"Failed to match file: {file_name}")

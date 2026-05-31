@@ -1,10 +1,15 @@
 """Module for processing Spinning Disk microscope image data."""
 
-import re
-from pathlib import Path
-from photo import MicroscopeBase, MicroscopeException, WellPos, Photo, WellName
+from __future__ import annotations
 
 import logging
+import re
+import typing
+from pathlib import Path
+
+from photo.microscopebase import MicroscopeBase, MicroscopeException
+from photo.photo import Photo
+from photo.wells import WellName, WellPos
 
 logger = logging.getLogger("mylSplitToWells")
 
@@ -12,11 +17,11 @@ logger = logging.getLogger("mylSplitToWells")
 class SpinningDisk(MicroscopeBase):
     """Represents data from a Spinning Disk microscope."""
 
-    _nd_files: list[Path]
+    _nd_files: typing.List[Path]
     regEx_nd = r"\"?Stage(?P<stage>\d+)\"?,?\s*\"?row:(?P<row>[A-Z]+),?\s*column:(?P<column>\d+),?\s*site:(?P<site>\d+)\"?\s*$"
     regEx_file_name = r"^(?P<batch>[\w\s\-\_]*)_.*_s(?P<stage>\d+).*\.(tif|stk)$"
 
-    def __init__(self, folder: Path | str):
+    def __init__(self, folder: typing.Union[Path, str]):
         """
         Initialize the SpinningDisk instance.
 
@@ -39,7 +44,7 @@ class SpinningDisk(MicroscopeBase):
             self._files_list.remove(file)
 
     @staticmethod
-    def _parse_line(line: str, pos_names: WellName | None = None):
+    def _parse_line(line: str, pos_names: typing.Optional[WellName] = None):
         """
         Parse a line from an .nd file to extract position information.
 
@@ -82,7 +87,7 @@ class SpinningDisk(MicroscopeBase):
             parsed_successfully = False
         return (parsed_successfully, int(di["stage"]), di["batch"])
 
-    def _match(self, pos_names: WellName | None = None):
+    def _match(self, pos_names: typing.Optional[WellName] = None):
         """
         Match files in the source folder to well positions based on .nd file data.
 
@@ -95,7 +100,7 @@ class SpinningDisk(MicroscopeBase):
         for nd_file in self._nd_files:
             batch = {}
             logger.info(f"Processing .nd file: {nd_file}")
-            with open(nd_file, "r") as f:
+            with open(nd_file, "r", encoding="utf-8") as f:
                 while True:
                     raw_line = f.readline()
                     if not raw_line:
@@ -114,29 +119,19 @@ class SpinningDisk(MicroscopeBase):
             suc, stage, batch = self._parse_file_name(file_name)
             if suc:
                 if batch not in stage_dict:
-                    logger.warning(
-                        f"Batch '{batch}' not found in nd files, skip '{file_name}'"
-                    )
+                    logger.warning(f"Batch '{batch}' not found in nd files, skip '{file_name}'")
                     skiped_files.append(file)
                     continue
                 if stage not in stage_dict[batch]:
-                    logger.warning(
-                        f"Stage '{stage}' not found in nd files, skip '{file_name}'"
-                    )
+                    logger.warning(f"Stage '{stage}' not found in nd files, skip '{file_name}'")
                     skiped_files.append(file)
                     continue
 
                 pos = stage_dict[batch][stage]
-                pic = Photo(path=file, pos=pos)
-                if pos not in self._pos_photo:
-                    self._pos_photo[pos] = [pic]
-                else:
-                    self._pos_photo[pos].append(pic)
+                self._add_photo(pos, Photo(path=file, pos=pos))
                 logger.debug(f"Matched photo {file} to position {pos}")
             else:
-                logger.warning(
-                    f"Failed to parse file name: {file_name}, skip it (check regex: '{SpinningDisk.regEx_file_name}')"
-                )
+                logger.warning(f"Failed to parse file name: {file_name}, skip it (check regex: '{SpinningDisk.regEx_file_name}')")
                 skiped_files.append(file)
         if len(skiped_files) > 0:
             logger.info(f"Skipped files: {skiped_files}")

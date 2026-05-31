@@ -1,9 +1,14 @@
 """Module for representing microscope images as Photo objects."""
 
-import shutil
-from pathlib import Path
-import re
+from __future__ import annotations
+
 import logging
+import re
+import shutil
+import typing
+from pathlib import Path
+
+from photo.validators import validate_file
 from photo.wells import WellPos
 
 logger = logging.getLogger("mylSplitToWells")
@@ -16,7 +21,7 @@ class Photo:
     _name: str
     _path: Path
 
-    def __init__(self, path: Path, pos: WellPos | tuple = None):
+    def __init__(self, path: Path, pos: typing.Optional[typing.Union[WellPos, tuple]] = None):
         """
         Initialize a Photo instance.
 
@@ -35,15 +40,15 @@ class Photo:
         return self._well
 
     @pos.setter
-    def pos(self, pos: WellPos | tuple):
+    def pos(self, pos: typing.Union[WellPos, tuple]):
         """
         Set the well position.
 
         :param pos: The well position as a WellPos object or (row, col, site) tuple.
         """
-        if type(pos) is tuple:
+        if isinstance(pos, tuple):
             self._well = WellPos.create(pos)
-        elif type(pos) is WellPos:
+        elif isinstance(pos, WellPos):
             self._well = pos
         else:
             raise TypeError("pos is not a WellPos or tuple")
@@ -81,22 +86,13 @@ class Photo:
         return self._path
 
     @path.setter
-    def path(self, value: Path | str):
+    def path(self, value: typing.Union[Path, str]):
         """
         Set the image file path.
 
         :param value: The filesystem path to the image file (Path or str).
         """
-        if type(value) is str:
-            val = Path(value)
-        elif type(value) is Path:
-            val = value
-        else:
-            raise TypeError("Path is not from type 'Path'")
-
-        if not val.is_file():
-            raise TypeError(f'Path "{str(val)}", is not a file.')
-        self._path = val
+        self._path = validate_file(value)
         logger.debug(f"Path set to: {self._path}")
 
     def copy(self, dest: Path, new_name: str = "", prefix: str = ""):
@@ -138,7 +134,5 @@ def sanitize_path(path: str) -> str:
     if reserved.match(sanitized):
         sanitized += "_"
     if sanitized != path:
-        print(
-            f"Warning: Invalid characters found in path '{path}'. Replacing with '_'."
-        )
+        print(f"Warning: Invalid characters found in path '{path}'. Replacing with '_'.")
     return sanitized

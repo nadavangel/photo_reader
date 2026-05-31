@@ -1,5 +1,31 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo_reader"
+version = "0.1.0"
+description = "A description of your project"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-cov>=6.0.0",
+    "pytest-github-actions-annotate-failures>=0.2.0",
+    "pylint>=4.0.5",
+    "ruff>=0.15.15",
+]
+build = [
+    "altgraph==0.17.3",
+    "pefile==2023.2.7",
+    "pyinstaller==6.15.0",
+    "pywin32-ctypes==0.2.2",
+    "Pillow==12.2.0; sys_platform == 'darwin'",
+]
+
 [tool.ruff]
-line-length = 100  
+line-length = 150  
 
 [tool.ruff.lint]
 ignore = [
@@ -10,10 +36,50 @@ ignore = [
 [tool.pylint.messages_control]
 disable = [
     "logging-fstring-interpolation",
-	"too-many-arguments",
-	"too-many-positional-arguments",
-	"too-many-locals"
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "too-many-locals",
+    "too-many-branches",
+    "too-many-return-statements",
+    "too-many-statements",
+    "too-few-public-methods",
+    "too-many-instance-attributes",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "protected-access",
+    "unused-argument",
+    "wrong-import-order",
+    "line-too-long",
+    "invalid-name",
+    "broad-exception-caught",
+    "redefined-outer-name",
+    "attribute-defined-outside-init",
+    "duplicate-code",
+    "import-error",
+    "no-name-in-module",
 ]
 
+[tool.pylint.basic]
+ignored-modules = ["tkinter"]
+
 [tool.pylint.format]
-max-line-length = 100  
+max-line-length = 150
+
+[tool.pytest.ini_options]
+addopts = "--cov=photo --cov=window --cov=split_to_wells --cov-report=term-missing --cov-branch"
+pythonpath = "."
+
+[tool.coverage.run]
+branch = true
+source = ["photo", "window", "split_to_wells"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
