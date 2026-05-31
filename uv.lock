@@ -438,7 +438,7 @@ wheels = [
 
 [[package]]
 name = "photo-reader"
-version = "1.4.10"
+version = "1.4.11"
 source = { editable = "." }
 
 [package.dev-dependencies]

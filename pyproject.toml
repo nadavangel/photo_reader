@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "photo_reader"
-version = "1.4.10"
+version = "1.4.11"
 requires-python = ">=3.10"
 description = "A description of your project"
 dependencies = []
