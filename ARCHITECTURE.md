@@ -5,30 +5,30 @@ This document outlines the high-level architecture of the `photo_reader` applica
 ## High-Level Component Diagram
 
 ```mermaid
-graph TD
-    %% Entry Points
-    GUI[window.py]
-    CLI[split_to_wells.py]
-
+classDiagram
+    %% Entry Points (Represented as classes)
+    class GUI
+    class CLI
+    
     %% Main Logic Modules
-    Base[photo_microscopebase]
-    Spinning[photo_spinning_disk]
-    Eva[photo_eva]
-    Photo[photo_photo]
-    Wells[photo_wells]
-    Validators[photo_validators]
-    Utils[photo_utils]
+    class MicroscopeBase
+    class SpinningDisk
+    class Eva
+    class Photo
+    class Wells
+    class Validators
+    class Utils
 
     %% Relationships
-    GUI --> Base
-    CLI --> Base
-    Spinning --|> Base
-    Eva --|> Base
+    GUI ..> MicroscopeBase
+    CLI ..> MicroscopeBase
+    SpinningDisk --|> MicroscopeBase
+    Eva --|> MicroscopeBase
 
-    Base --> Photo
-    Base --> Wells
-    Base --> Validators
-    Base --> Utils
+    MicroscopeBase --> Photo
+    MicroscopeBase --> Wells
+    MicroscopeBase --> Validators
+    MicroscopeBase --> Utils
 ```
 
 ## Description
