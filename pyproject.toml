@@ -24,7 +24,7 @@ build = [
     "pefile==2023.2.7",
     "pyinstaller==6.15.0",
     "pywin32-ctypes==0.2.2",
-    "Pillow==10.0.0; sys_platform == 'darwin'",
+    "Pillow>=10.0.0; sys_platform == 'darwin'",
 ]
 
 [tool.ruff]
