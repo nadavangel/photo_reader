@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml)
+[![Coverage](https://codecov.io/gh/nadavangel/photo_reader/graph/badge.svg)](https://codecov.io/gh/nadavangel/photo_reader)
 [![Pylint](https://github.com/nadavangel/photo_reader/actions/workflows/pylint.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/pylint.yml)
 [![Ruff](https://github.com/nadavangel/photo_reader/actions/workflows/ruff.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/ruff.yml)
 [![Mypy](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml)
