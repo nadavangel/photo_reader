@@ -22,6 +22,7 @@ build = [
     "altgraph==0.17.3",
     "pefile==2023.2.7",
     "pyinstaller==6.15.0",
+    "setuptools",
     "pywin32-ctypes==0.2.2",
     "Pillow==12.2.0; sys_platform == 'darwin'",
 ]
