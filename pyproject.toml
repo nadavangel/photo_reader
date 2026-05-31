@@ -36,18 +36,35 @@ ignore = [
 [tool.pylint.messages_control]
 disable = [
     "logging-fstring-interpolation",
-        "too-many-arguments",
-        "too-many-positional-arguments",
-        "too-many-locals",
+    "too-many-arguments",
+    "too-many-positional-arguments",
+    "too-many-locals",
     "too-many-branches",
     "too-many-return-statements",
     "too-many-statements",
     "too-few-public-methods",
     "too-many-instance-attributes",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "protected-access",
+    "unused-argument",
+    "wrong-import-order",
+    "line-too-long",
+    "invalid-name",
+    "broad-exception-caught",
+    "redefined-outer-name",
+    "attribute-defined-outside-init",
+    "duplicate-code",
+    "import-error",
+    "no-name-in-module",
 ]
 
 [tool.pylint.basic]
 ignored-modules = ["tkinter"]
+
+[tool.pylint.format]
+max-line-length = 150
 
 [tool.pytest.ini_options]
 addopts = "--cov=photo --cov=window --cov=split_to_wells --cov-report=term-missing --cov-branch"

@@ -23,7 +23,7 @@ def test_get_exception_location():
 def test_microscopebase_init(tmp_path):
     m = ConcreteMicroscope(tmp_path)
     assert m.path == tmp_path
-    assert m._pos_photo == {}
+    assert not m._pos_photo
     assert isinstance(m._files_list, list)
 
 
