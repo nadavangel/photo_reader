@@ -418,7 +418,6 @@ build = [
     { name = "pillow", marker = "sys_platform == 'darwin'", specifier = "==12.2.0" },
     { name = "pyinstaller", specifier = "==6.15.0" },
     { name = "pywin32-ctypes", specifier = "==0.2.2" },
-    { name = "setuptools" },
     { name = "setuptools", specifier = ">=75.0.0" },
 ]
 dev = [
