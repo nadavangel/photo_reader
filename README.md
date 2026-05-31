@@ -194,8 +194,8 @@ The executable will be created in the `dist/` folder.
 ### macOS
 
 **Installation:**
-- Ensure Python 3.7+ is installed
-- Install tkinter if needed: `brew install python-tk@3.11`
+- Ensure Python 3.10+ is installed
+- Install tkinter if needed: `brew install python-tk@3.10`
 
 **Running the Application:**
 ```bash
@@ -305,7 +305,7 @@ pre-commit install
 **Problem:** `ModuleNotFoundError: No module named 'tkinter'`
 
 **Solution:**
-- **macOS:** `brew install python-tk@3.11` (replace 3.11 with your Python version)
+- **macOS:** `brew install python-tk@3.10` (replace 3.10 with your Python version)
 - **Ubuntu/Debian:** `sudo apt-get install python3-tk`
 - **Fedora/RHEL:** `sudo dnf install python3-tkinter`
 - **Windows:** Reinstall Python and ensure tkinter is selected
