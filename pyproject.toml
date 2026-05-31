@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "photo_reader"
-version = "1.4.11"
+version = "1.4.12"
 requires-python = ">=3.10"
 description = "A description of your project"
 dependencies = []
@@ -19,7 +19,7 @@ dev = [
     "mypy>=1.15.0",
 ]
 build = [
-    "setuptools>=75.0.0",
+    "setuptools<80.0.0",   # This brings back pkg_resources safely
     "altgraph==0.17.3",
     "pefile==2023.2.7",
     "pyinstaller==6.15.0",
