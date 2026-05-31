@@ -21,11 +21,8 @@ jobs:
       - name: Set up Python
         run: uv python install 3.11
       
-      - name: Install dependencies
-        run: uv pip install ".[build]"
-      
       - name: Build exe
-        run: uv run pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
@@ -47,13 +44,9 @@ jobs:
       - name: Set up Python
         run: uv python install 3.11
       
-      - name: Install dependencies
-        run: |
-          uv pip install ".[build]"
-          uv pip install Pillow==12.2.0
       - name: Build app
         run: |
-          uv run pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
+          uv run --group build pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
           cd dist
           zip -r splitToWells_mac.zip splitToWells.app
       
@@ -77,11 +70,8 @@ jobs:
       - name: Set up Python
         run: uv python install 3.11
       
-      - name: Install dependencies
-        run: uv pip install ".[build]"
-      
       - name: Build executable
-        run: uv run pyinstaller --clean -F --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3

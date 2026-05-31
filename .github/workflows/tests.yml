@@ -27,14 +27,9 @@ jobs:
     - name: Set up Python ${{ matrix.python-version }}
       run: uv python install ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        uv pip install pytest pytest-cov pytest-github-actions-annotate-failures
-        uv pip install -e .
-
     - name: Run tests with pytest
       run: |
-        uv run pytest --cov-report=xml
+        uv run --group dev pytest --cov-report=xml
 
     - name: Display logs on failure
       if: failure()
@@ -59,4 +54,4 @@ jobs:
       if: always()
       run: |
         echo "## Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
-        uv run python -m coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+        uv run --group dev python -m coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
