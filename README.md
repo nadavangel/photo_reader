@@ -203,6 +203,14 @@ python window.py      # GUI mode
 uv run python split_to_wells.py  # CLI mode
 ```
 
+**Running the App Bundle (.app):**
+If you download the pre-compiled `.app` bundle, macOS may flag it as damaged because it is unsigned. To bypass this:
+- **Method 1 (Right-Click):** Unzip the file, **Right-Click** (or hold `Control` and click) the `splitToWells` app, select **Open**, and then click **Open** again in the pop-up window.
+- **Method 2 (Terminal):** Run the following command to manually remove the quarantine tag:
+  ```bash
+  xattr -d com.apple.quarantine /path/to/splitToWells.app
+  ```
+
 **Building Executables:**
 The PyInstaller build process works the same as on other platforms:
 ```bash

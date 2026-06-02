@@ -46,9 +46,12 @@ jobs:
       
       - name: Build app
         run: |
+          # Build the .app bundle using PyInstaller
           uv run --group build pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
+          
+          # Use 'ditto' instead of 'zip' to preserve critical bundle symlinks and permissions
           cd dist
-          zip -r splitToWells_mac.zip splitToWells.app
+          ditto -c -k --sequesterRsrc --keepParent splitToWells.app splitToWells_mac.zip
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
