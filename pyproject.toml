@@ -15,7 +15,7 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest-github-actions-annotate-failures>=0.2.0",
     "pylint>=4.0.5",
-    "ruff>=0.15.15",
+    "ruff>=0.15.16",
     "mypy>=1.15.0",
 ]
 build = [
