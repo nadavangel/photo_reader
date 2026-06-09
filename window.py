@@ -218,6 +218,7 @@ class App(ctk.CTk):
         self.footer_frame.grid_columnconfigure(0, weight=1)
         self.footer_frame.grid_columnconfigure(1, weight=0)
 
+        # Trailing space added to ensure italicized characters (like 'l' in 'Angel') are not clipped.
         footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME} "
         self.lbl_footer = ctk.CTkLabel(
             self.footer_frame,
