@@ -9,6 +9,7 @@ import logging
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from logging import FileHandler, Handler
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -22,7 +23,7 @@ DEFAULT_CONFIG_FILE = ".config.ini"
 APP_NAME = "Split To Wells"
 APP_VERSION = "2.0.0"
 AUTHOR_NAME = "Nadav Angel"
-AUTHOR_EMAIL = "nadavagnel2@gmail.com"
+GITHUB_URL = "https://github.com/nadavangel/photo_reader"
 
 # Configure customtkinter
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -211,10 +212,16 @@ class App(ctk.CTk):
         self.footer_frame.grid(row=5, column=0, padx=20, pady=(0, 10), sticky="ew")
         self.footer_frame.grid_columnconfigure(0, weight=1)
 
-        footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME} ({AUTHOR_EMAIL})"
-        ctk.CTkLabel(self.footer_frame, text=footer_text, font=ctk.CTkFont(size=10, slant="italic"), text_color="gray").grid(
-            row=0, column=0, sticky="e"
+        footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME}"
+        self.lbl_footer = ctk.CTkLabel(self.footer_frame, text=footer_text, font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
+        self.lbl_footer.grid(row=0, column=0, sticky="e")
+
+        # GitHub Link
+        self.lbl_github = ctk.CTkLabel(
+            self.footer_frame, text="GitHub", font=ctk.CTkFont(size=10, underline=True), text_color="#3498db", cursor="hand2"
         )
+        self.lbl_github.grid(row=0, column=1, padx=(10, 0), sticky="e")
+        self.lbl_github.bind("<Button-1>", lambda e: webbrowser.open_new_tab(GITHUB_URL))
 
         # Setup Logging to Console
         self.text_handler = TextHandler(self.console)
