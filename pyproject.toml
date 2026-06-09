@@ -1,13 +1,41 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "photo_reader"
-version = "1.4.12"
+version = "2.0.0"
+description = "Modern GUI and CLI tool for splitting microscope images into well-organized folders."
+readme = "README.md"
 requires-python = ">=3.10"
-description = "A description of your project"
-dependencies = []
+license = { text = "MIT" }
+authors = [
+    { name = "Nadav Angel", email = "nadavagnel2@gmail.com" }
+]
+keywords = ["microscope", "bioinformatics", "image-processing", "well-plate", "spinning-disk"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "customtkinter>=5.2.2",
+    "Pillow>=10.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/nadavangel/photo_reader"
+Repository = "https://github.com/nadavangel/photo_reader.git"
+"Bug Tracker" = "https://github.com/nadavangel/photo_reader/issues"
+
+[project.scripts]
+split-to-wells = "split_to_wells:main"
+split-to-wells-gui = "window:main"
 
 [dependency-groups]
 dev = [
@@ -19,21 +47,19 @@ dev = [
     "mypy>=1.15.0",
 ]
 build = [
-    "altgraph==0.17.5",
-    "pefile==2024.8.26",
-    "pyinstaller==6.20.0",
-    "pywin32-ctypes==0.2.3",
-    "Pillow>=10.0.0; sys_platform == 'darwin'",
+    "pyinstaller>=6.0.0",
 ]
+
+[tool.setuptools]
+packages = ["photo"]
+py-modules = ["window", "split_to_wells"]
 
 [tool.ruff]
-line-length = 150  
+line-length = 150
 
 [tool.ruff.lint]
-ignore = [
-    "F403",  
-    "F405",
-]
+select = ["E", "F", "W", "I"]
+ignore = ["F403", "F405"]
 
 [tool.pylint.messages_control]
 disable = [
@@ -63,7 +89,7 @@ disable = [
 ]
 
 [tool.pylint.basic]
-ignored-modules = ["tkinter"]
+ignored-modules = ["tkinter", "customtkinter"]
 
 [tool.pylint.format]
 max-line-length = 150

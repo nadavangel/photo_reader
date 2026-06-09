@@ -1,492 +1,324 @@
 """
-This module contains the GUI application for splitting photos into wells.
+This module contains the modern GUI application for splitting photos into wells using CustomTkinter.
 """
 
 from __future__ import annotations
 
 import configparser
-import datetime
 import logging
 import sys
 import threading
 import tkinter as tk
-import typing
-from logging import FileHandler
-from tkinter import DISABLED, END, NORMAL, SEL, WORD, filedialog, messagebox
-from tkinter.scrolledtext import ScrolledText
-from tkinter.ttk import Progressbar
+from logging import FileHandler, Handler
+from pathlib import Path
+from tkinter import filedialog, messagebox
 
-from photo.microscopebase import MicroscopeException, get_exception_location
+import customtkinter as ctk  # type: ignore
+
 from photo.utils import Microscope
 from photo.wells import WellNameTxt
 
 DEFAULT_CONFIG_FILE = ".config.ini"
+APP_NAME = "Split To Wells"
+APP_VERSION = "2.0.0"
+
+# Configure customtkinter
+ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 logger = logging.getLogger("mylSplitToWells")
 
 
-class FolderSelect(tk.Frame):
+class TextHandler(Handler):
     """
-    A tkinter Frame for selecting and displaying a folder path.
-
-    Provides a label, an entry field for the path, and a button to browse
-    for a directory using a file dialog.
+    Custom logging handler to post logs to a CustomTkinter Textbox.
     """
 
-    def __init__(self, parent=None, folder_description="", path: str = "", **kw):
-        """
-        Initialize the FolderSelect frame.
+    def __init__(self, textbox: ctk.CTkTextbox):
+        super().__init__()
+        self.textbox = textbox
 
-        Args:
-            parent: The parent tkinter widget.
-            folder_description: The label text describing the folder selection.
-            path: The initial path value.
-            **kw: Additional keyword arguments for the Frame.
-        """
-        tk.Frame.__init__(self, master=parent, **kw)
-        self._parent = parent
-        self.folder_path_var = tk.StringVar()
-        self.folder_path_var.set(path)
-        self.lbl_name = tk.Label(self, text=folder_description)
-        self.lbl_name.grid(row=0, column=0)
-        self.ent_path = tk.Entry(self, textvariable=self.folder_path_var)
-        self.ent_path.grid(row=0, column=1)
-        self.btn_find = tk.Button(self, text="Browse Folder", command=self.set_folder_path)
-        self.btn_find.grid(row=0, column=2)
+    def emit(self, record):
+        msg = self.format(record)
 
-    def set_folder_path(self):
-        """
-        Open a directory selection dialog and update the folder path.
-        """
-        folder_selected = filedialog.askdirectory(parent=self._parent, initialdir=self.folder_path)
-        if folder_selected:
-            self.folder_path_var.set(folder_selected)
+        def append():
+            self.textbox.configure(state="normal")
+            self.textbox.insert("end", msg + "\n")
+            self.textbox.configure(state="disabled")
+            self.textbox.see("end")
+
+        self.textbox.after(0, append)
+
+
+class FolderSelect(ctk.CTkFrame):
+    """
+    A CustomTkinter Frame for selecting and displaying a folder path.
+    """
+
+    def __init__(self, parent, label_text, path="", **kwargs):
+        super().__init__(master=parent, fg_color="transparent", **kwargs)
+        self.grid_columnconfigure(1, weight=1)
+
+        self.label = ctk.CTkLabel(self, text=label_text, width=140, anchor="w")
+        self.label.grid(row=0, column=0, padx=(0, 10), pady=5)
+
+        self.entry = ctk.CTkEntry(self, placeholder_text="Select a folder...")
+        self.entry.insert(0, path)
+        self.entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=5)
+
+        self.button = ctk.CTkButton(self, text="Browse", width=80, command=self.browse)
+        self.button.grid(row=0, column=2, pady=5)
+
+    def browse(self):
+        folder = filedialog.askdirectory(initialdir=self.entry.get())
+        if folder:
+            self.entry.delete(0, "end")
+            self.entry.insert(0, folder)
 
     @property
     def folder_path(self):
-        """
-        Get the current folder path.
-
-        Returns:
-            The string representing the folder path.
-        """
-        return self.folder_path_var.get()
+        return self.entry.get()
 
 
-class Multitext(tk.Frame):
+class App(ctk.CTk):
     """
-    A tkinter Frame for displaying and editing multi-line text.
-
-    Provides a label and a scrolled text area.
+    Modernized main application window using CustomTkinter.
     """
 
-    def __init__(self, parent=None, title="", **kw):
-        """
-        Initialize the Multitext frame.
-
-        Args:
-            parent: The parent tkinter widget.
-            title: The label text describing the text area.
-            **kw: Additional keyword arguments for the Frame and ScrolledText.
-        """
-        tk.Frame.__init__(self, master=parent, **kw)
-        self._parent = parent
-        self.lbl_name = tk.Label(self, text=title)
-        self.lbl_name.grid(row=0, column=0)
-
-        self.text = ScrolledText(self, wrap=WORD, **kw)
-        self.text.grid(row=0, column=1)
-
-    @property
-    def value(self):
-        """
-        Get the current text content.
-
-        Returns:
-            The string content of the scrolled text area.
-        """
-        return self.text.get("1.0", END)
-
-    @staticmethod
-    def select_all_operation(event, text_widget):
-        """
-        Select all text in the given widget if it is a ScrolledText instance.
-
-        Args:
-            event: The triggering event.
-            text_widget: The widget to select text from.
-
-        Returns:
-            "break" to prevent further event processing if successful, None otherwise.
-        """
-        if isinstance(text_widget, ScrolledText):
-            lines = text_widget.get("1.0", "end").split("\n")
-            lines.pop()
-        else:
-            event.widget.event_generate("<<SelectAll>>")
-            return "break"
-
-        text_widget.tag_remove(SEL, "1.0", "end")
-        for idx, line in enumerate(lines):
-            text_widget.tag_add(SEL, f"{idx + 1}.0", f"{idx + 1}.{len(line)}")
-        return "break"
-
-
-class Input(tk.Frame):
-    """
-    A tkinter Frame for receiving single-line text input.
-
-    Provides a label and an entry field.
-    """
-
-    def __init__(self, parent=None, description="", **kw):
-        """
-        Initialize the Input frame.
-
-        Args:
-            parent: The parent tkinter widget.
-            description: The label text describing the input field.
-            **kw: Additional keyword arguments for the Frame.
-        """
-        tk.Frame.__init__(self, master=parent, **kw)
-        self.lbl_name = tk.Label(self, text=description)
-        self.lbl_name.grid(row=0, column=0)
-        self.ent_path = tk.Entry(self)
-        self.ent_path.grid(row=0, column=1)
-
-    @property
-    def value(self):
-        """
-        Get the current input value.
-
-        Returns:
-            The string content of the entry field.
-        """
-        return self.ent_path.get()
-
-
-class AppUI:
-    """
-    A container for the UI components of the application.
-    """
-
-    def __init__(self, master, cfg):
-        row = 0
-        self.src_folder = FolderSelect(
-            master,
-            "Select source folder",
-            path=cfg.get("Settings", "src_folder", fallback=""),
-        )
-        self.src_folder.grid(row=row)
-        row += 1
-
-        self.dest_folder = FolderSelect(
-            master,
-            "Select destination folder",
-            path=cfg.get("Settings", "dest_folder", fallback=""),
-        )
-        self.dest_folder.grid(row=row)
-        row += 1
-
-        self.name = Input(master, "Name")
-        self.name.grid(row=row)
-        row += 1
-
-        self.material = Multitext(master, title="Material info", width=20, height=3)
-        self.material.grid(row=row)
-        row += 1
-
-        self.create_subdir_value = tk.BooleanVar()
-        self.create_subdir_checkbox = tk.Checkbutton(
-            master,
-            text="Create subdir",
-            variable=self.create_subdir_value,
-            onvalue=True,
-            offvalue=False,
-        )
-        if cfg.has_option("Settings", "create_subdir"):
-            create_subdir = cfg.getboolean("Settings", "create_subdir", fallback=True)
-            if create_subdir:
-                self.create_subdir_checkbox.select()
-            else:
-                self.create_subdir_checkbox.deselect()
-        self.create_subdir_checkbox.grid(row=row)
-        row += 1
-
-        self.file_prefix = Input(master, "File prefix")
-        self.file_prefix.grid(row=row)
-        row += 1
-
-        self.threads = Input(master, "Threads")
-        self.threads.ent_path.insert(0, cfg.get("Settings", "threads", fallback="1"))
-        self.threads.grid(row=row)
-        row += 1
-
-        self.btn_run = tk.Button(master, text="Run")  # command is set later
-        self.btn_run.grid(row=row)
-        row += 1
-
-        self.label = tk.Label(master, text="")
-        self.label.grid(row=row)
-        row += 1
-
-        self.progressbar = Progressbar(master, orient="horizontal", mode="indeterminate", length=200)
-        self.row_count = row
-
-
-class App(tk.Tk):
-    """
-    The main application window (Tkinter based).
-
-    Manages the UI layout, configuration loading/saving, and the file splitting process.
-    """
-
-    def __init__(self, cfg: typing.Optional[configparser.ConfigParser] = None):
-        """
-        Initialize the App window.
-
-        Args:
-            cfg: The configuration object to load settings from.
-        """
+    def __init__(self, cfg: configparser.ConfigParser):
         super().__init__()
-        self.resizable(False, False)
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        self.title(f"{APP_NAME} v{APP_VERSION}")
+        self.geometry("800x850")
+        self.minsize(700, 800)
+
+        # Set icon if it exists
+        icon_path = Path("microscope.ico")
+        if icon_path.exists():
+            try:
+                self.iconbitmap(str(icon_path))
+            except Exception as e:
+                print(f"Could not load icon: {e}")
 
         self._cfg = cfg
-        self.ui = AppUI(self, self._cfg)
-        self.ui.btn_run.config(command=self.run)
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.bind_all("<Key>", self._on_key_release, "+")
+        # Main Layout
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(3, weight=1)  # Console row
 
-    @staticmethod
-    def _on_key_release(event):
-        """
-        Handle key release events for cut, copy, paste, and select-all.
+        # 1. Path Configuration Frame
+        self.path_frame = ctk.CTkFrame(self)
+        self.path_frame.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="nsew")
+        self.path_frame.grid_columnconfigure(0, weight=1)
 
-        Args:
-            event: The triggering event.
-        """
-        ctrl = (event.state & 0x4) != 0
-        if event.keycode == 88 and ctrl and event.keysym.lower() != "x":
-            event.widget.event_generate("<<Cut>>")
-            return "break"
+        ctk.CTkLabel(self.path_frame, text="Path Configuration", font=ctk.CTkFont(size=16, weight="bold")).grid(
+            row=0, column=0, padx=10, pady=10, sticky="w"
+        )
 
-        if event.keycode == 86 and ctrl and event.keysym.lower() != "v":
-            event.widget.event_generate("<<Paste>>")
-            return "break"
+        self.src_folder = FolderSelect(
+            self.path_frame,
+            "Source Folder",
+            path=cfg.get("Settings", "src_folder", fallback=""),
+        )
+        self.src_folder.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
 
-        if event.keycode == 67 and ctrl and event.keysym.lower() != "c":
-            event.widget.event_generate("<<Copy>>")
-            return "break"
+        self.dest_folder = FolderSelect(
+            self.path_frame,
+            "Destination Folder",
+            path=cfg.get("Settings", "dest_folder", fallback=""),
+        )
+        self.dest_folder.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
 
-        if event.keycode == 65 and ctrl:  # ctrl+a
-            Multitext.select_all_operation(event=event, text_widget=event.widget)
-            return "break"
-        return None
+        # 2. Settings Frame
+        self.settings_frame = ctk.CTkFrame(self)
+        self.settings_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        self.settings_frame.grid_columnconfigure((1, 3), weight=1)
+
+        ctk.CTkLabel(self.settings_frame, text="Execution Settings", font=ctk.CTkFont(size=16, weight="bold")).grid(
+            row=0, column=0, padx=10, pady=10, sticky="w"
+        )
+
+        # Row 1
+        ctk.CTkLabel(self.settings_frame, text="Output Name").grid(row=1, column=0, padx=(10, 5), pady=5, sticky="w")
+        self.ent_name = ctk.CTkEntry(self.settings_frame, placeholder_text="e.g. Experiment_01")
+        self.ent_name.insert(0, cfg.get("Settings", "name", fallback=""))
+        self.ent_name.grid(row=1, column=1, padx=(0, 10), pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.settings_frame, text="File Prefix").grid(row=1, column=2, padx=(10, 5), pady=5, sticky="w")
+        self.ent_file_prefix = ctk.CTkEntry(self.settings_frame, placeholder_text="e.g. img_")
+        self.ent_file_prefix.insert(0, cfg.get("Settings", "file_prefix", fallback=""))
+        self.ent_file_prefix.grid(row=1, column=3, padx=(0, 10), pady=5, sticky="ew")
+
+        # Row 2
+        ctk.CTkLabel(self.settings_frame, text="Threads").grid(row=2, column=0, padx=(10, 5), pady=5, sticky="w")
+        self.ent_threads = ctk.CTkEntry(self.settings_frame, width=80)
+        self.ent_threads.insert(0, cfg.get("Settings", "threads", fallback="4"))
+        self.ent_threads.grid(row=2, column=1, padx=(0, 10), pady=5, sticky="w")
+
+        self.create_subdir_var = tk.BooleanVar(value=cfg.getboolean("Settings", "create_subdir", fallback=True))
+        self.check_subdir = ctk.CTkCheckBox(self.settings_frame, text="Create Well Subdirectories", variable=self.create_subdir_var)
+        self.check_subdir.grid(row=2, column=2, columnspan=2, padx=10, pady=5, sticky="w")
+
+        # 3. Material Info Frame
+        self.material_frame = ctk.CTkFrame(self)
+        self.material_frame.grid(row=2, column=0, padx=20, pady=10, sticky="nsew")
+        self.material_frame.grid_columnconfigure(1, weight=1)
+        self.material_frame.grid_rowconfigure(1, weight=1)
+
+        ctk.CTkLabel(self.material_frame, text="Material Mapping (Optional)", font=ctk.CTkFont(size=16, weight="bold")).grid(
+            row=0, column=0, padx=10, pady=10, sticky="w"
+        )
+        ctk.CTkLabel(self.material_frame, text="Format: Position [TAB] Name", font=ctk.CTkFont(size=11, slant="italic")).grid(
+            row=0, column=1, padx=10, pady=10, sticky="e"
+        )
+
+        self.txt_material = ctk.CTkTextbox(self.material_frame, height=120)
+        self.txt_material.insert("1.0", cfg.get("Settings", "well_name", fallback=""))
+        self.txt_material.grid(row=1, column=0, columnspan=2, padx=10, pady=(0, 10), sticky="nsew")
+
+        # 4. Console Frame
+        self.console_frame = ctk.CTkFrame(self)
+        self.console_frame.grid(row=3, column=0, padx=20, pady=10, sticky="nsew")
+        self.console_frame.grid_columnconfigure(0, weight=1)
+        self.console_frame.grid_rowconfigure(1, weight=1)
+
+        ctk.CTkLabel(self.console_frame, text="Status Console", font=ctk.CTkFont(size=16, weight="bold")).grid(
+            row=0, column=0, padx=10, pady=10, sticky="w"
+        )
+
+        self.console = ctk.CTkTextbox(self.console_frame, state="disabled", fg_color="#1a1a1a", text_color="#2ecc71", font=("Consolas", 12))
+        self.console.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="nsew")
+
+        # 5. Control Frame
+        self.control_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.control_frame.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
+        self.control_frame.grid_columnconfigure(0, weight=1)
+
+        self.progressbar = ctk.CTkProgressBar(self.control_frame, mode="indeterminate", height=15)
+        self.progressbar.grid(row=0, column=0, padx=(0, 20), sticky="ew")
+        self.progressbar.set(0)
+
+        self.btn_run = ctk.CTkButton(
+            self.control_frame, text="START PROCESSING", height=40, font=ctk.CTkFont(size=14, weight="bold"), command=self.run
+        )
+        self.btn_run.grid(row=0, column=1)
+
+        # Setup Logging to Console
+        self.text_handler = TextHandler(self.console)
+        self.text_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"))
+        logger.addHandler(self.text_handler)
 
     def run(self):
-        """
-        Run the file splitting operation in a separate thread.
-        """
-        src = self.ui.src_folder.folder_path
-        dst = self.ui.dest_folder.folder_path
-        name = self.ui.name.value
-        file_prefix = self.ui.file_prefix.value
+        src = self.src_folder.folder_path
+        dst = self.dest_folder.folder_path
+        name = self.ent_name.get()
+        file_prefix = self.ent_file_prefix.get()
 
-        if src is None:
-            print("Please select source (plate/Spinning disc) folder:")
-            folder = filedialog.askdirectory(title="Select source folder")
-        else:
-            folder = src
-
-        if folder is None or folder == "":
-            logger.error("No source folder was selected")
+        if not src:
+            messagebox.showerror("Error", "Please select a source folder.")
+            return
+        if not dst:
+            messagebox.showerror("Error", "Please select a destination folder.")
             return
 
-        if dst is None:
-            print("Please select destination folder:")
-            dest = filedialog.askdirectory(title="Select destination folder")
-        else:
-            dest = dst
-
-        if dest is None or dest == "":
-            logger.error("No destination folder was selected")
-            return
-
-        well_name = None
-        if self.ui.material.value != "":
-            well_name = WellNameTxt(buff=self.ui.material.value)
+        well_name_txt = self.txt_material.get("1.0", "end-1c").strip()
+        well_name = WellNameTxt(buff=well_name_txt) if well_name_txt else None
 
         try:
-            mic = Microscope(folder=folder)
-        except MicroscopeException as e:
-            ex_file, ex_line = get_exception_location()
-            logger.error(f'Error occurred while initializing microscope : "{e}" (at {ex_file}:{ex_line})')
-            return
-        except TypeError as e:
-            ex_file, ex_line = get_exception_location()
-            logger.error(f'Type error occurred while initializing microscope: "{e}" (at {ex_file}:{ex_line})')
+            mic = Microscope(folder=src)
+        except Exception as e:
+            logger.error(f"Failed to initialize microscope: {e}")
+            messagebox.showerror("Error", f"Failed to initialize: {e}")
             return
 
-        self.start_run()
         try:
-            threads = int(self.ui.threads.value)
-        except (ValueError, TypeError):
+            threads = int(self.ent_threads.get())
+        except ValueError:
             threads = 1
-            logger.warning(f"Invalid thread count '{self.ui.threads.value}', defaulting to 1")
+            logger.warning("Invalid thread count, defaulting to 1")
+
+        self.start_ui_run()
 
         run_thread = threading.Thread(
             target=mic.move,
             kwargs={
-                "dest": dest,
+                "dest": dst,
                 "prefix": name,
-                "create_dubdir": self.ui.create_subdir_value.get(),
+                "create_dubdir": self.create_subdir_var.get(),
                 "pos_names": well_name,
                 "file_prefix": file_prefix,
                 "threads": threads,
             },
+            daemon=True,
         )
-        run_thread.daemon = True
         run_thread.start()
+        self.monitor(run_thread)
 
-        self.monitor(run_thread=run_thread)
+    def start_ui_run(self):
+        self.btn_run.configure(state="disabled", text="PROCESSING...")
+        self.progressbar.start()
+        logger.info("Starting file processing operation...")
 
-    def start_run(self):
-        """
-        Show the progress bar and disable the run button.
-        """
-        self.ui.progressbar.grid(row=self.ui.row_count)
-        self.ui.progressbar.start(20)
-        self.ui.btn_run.config(state=DISABLED)
-
-    def stop_run(self):
-        """
-        Stop the progress bar, re-enable the run button, and show a completion message.
-        """
-        self.ui.progressbar.stop()
-        self.ui.progressbar.grid_forget()
-        self.ui.btn_run.config(state=NORMAL)
-        messagebox.showinfo(title="Done", message="Done")
+    def stop_ui_run(self):
+        self.progressbar.stop()
+        self.progressbar.set(1.0)
+        self.btn_run.configure(state="normal", text="START PROCESSING")
+        logger.info("Operation completed.")
+        messagebox.showinfo("Success", "Files have been successfully split into wells!")
 
     def monitor(self, run_thread):
-        """
-        Monitor the running thread and stop the UI process upon completion.
-
-        Args:
-            run_thread: The thread running the file splitting process.
-        """
         if run_thread.is_alive():
             self.after(100, lambda: self.monitor(run_thread))
         else:
-            self.stop_run()
-
-    def _save_configuration(self) -> None:
-        """
-        Save the current UI state to the configuration file.
-        """
-        if self._cfg is None:
-            return
-
-        if "Settings" not in self._cfg:
-            self._cfg["Settings"] = {}
-        self._cfg["Settings"]["src_folder"] = self.ui.src_folder.folder_path
-        self._cfg["Settings"]["dest_folder"] = self.ui.dest_folder.folder_path
-        self._cfg["Settings"]["file_prefix"] = self.ui.file_prefix.value
-        self._cfg["Settings"]["name"] = self.ui.name.value
-        self._cfg["Settings"]["create_subdir"] = str(self.ui.create_subdir_value.get())  # Boolean value
-        self._cfg["Settings"]["well_name"] = self.ui.material.value  # Multitext value
-        self._cfg["Settings"]["threads"] = self.ui.threads.value
-
-        _save_cfg(DEFAULT_CONFIG_FILE, self._cfg)
+            self.stop_ui_run()
 
     def on_closing(self):
-        """
-        Handle the application closing event by saving configuration.
-        """
-        logger.info("Closing application")
         self._save_configuration()
         self.destroy()
 
+    def _save_configuration(self):
+        if "Settings" not in self._cfg:
+            self._cfg["Settings"] = {}
 
-def _create_and_read_cfg(path: str) -> configparser.ConfigParser:
-    """
-    Read configuration from a file or create a default object if the file is missing.
+        self._cfg["Settings"]["src_folder"] = self.src_folder.folder_path
+        self._cfg["Settings"]["dest_folder"] = self.dest_folder.folder_path
+        self._cfg["Settings"]["name"] = self.ent_name.get()
+        self._cfg["Settings"]["file_prefix"] = self.ent_file_prefix.get()
+        self._cfg["Settings"]["threads"] = self.ent_threads.get()
+        self._cfg["Settings"]["create_subdir"] = str(self.create_subdir_var.get())
+        self._cfg["Settings"]["well_name"] = self.txt_material.get("1.0", "end-1c")
 
-    Args:
-        path: The path to the configuration file.
+        try:
+            with open(DEFAULT_CONFIG_FILE, "w", encoding="utf-8") as f:
+                self._cfg.write(f)
+        except Exception as e:
+            print(f"Error saving config: {e}")
 
-    Returns:
-        A configparser.ConfigParser object populated with settings from the file.
-    """
+
+def main():
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+
+    # Configure file logging
+    file_handler = FileHandler("SplitToWells.log", encoding="utf-8", mode="w")
+    file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
+    root_logger.addHandler(file_handler)
+
+    # Standard out logging
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+    stdout_handler.setLevel(logging.INFO)
+    root_logger.addHandler(stdout_handler)
+
+    # Load Config
     config = configparser.ConfigParser()
-    try:
-        with open(path, "r", encoding="utf-8") as cfgfile:
-            config.read_file(cfgfile)
-            logger.debug(f"Configuration loaded from {path}")
-    except FileNotFoundError:
-        logger.warning(f"Configuration file {path} not found. Creating default configuration.")
-    return config
+    config.read(DEFAULT_CONFIG_FILE)
 
-
-def _save_cfg(path: str, config: configparser.ConfigParser) -> None:
-    """
-    Save the configuration to a file.
-
-    Includes an update timestamp in the 'Meta' section.
-
-    Args:
-        path: The path to the configuration file.
-        config: The configuration object to save.
-    """
-    config["Meta"] = {"Update time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-    try:
-        with open(path, "w", encoding="utf-8") as cfgfile:
-            config.write(cfgfile)
-            logger.debug(f"Configuration saved to '{path}', contents:\n{config}")
-    except (IOError, OSError) as e:
-        ex_file, ex_line = get_exception_location()
-        logger.error(f"Error occurred while saving configuration to '{path}': {e} (at {ex_file}:{ex_line})")
-
-
-def main() -> int:
-    """
-    Main entry point for the SplitToWells GUI application.
-
-    Configures logging, loads settings, initializes the application window,
-    and starts the main GUI loop.
-
-    Returns:
-        0.
-    """
-    formatter_stdout = logging.Formatter("%(asctime)s %(levelname)-7s %(message)s")
-    formatter_file = logging.Formatter(
-        "%(asctime)s.%(msecs)03d %(levelname)-7s [%(funcName)-20s] [%(filename)25s:%(lineno)-4d] %(message)s",
-        datefmt="%d/%m/%Y %H:%M:%S",
-    )
-    logger.setLevel(logging.DEBUG)
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.INFO)
-    stream_handler.setFormatter(formatter_stdout)
-
-    log_file_path = "SplitToWells.log"
-    file_handler = FileHandler(log_file_path, encoding="utf-8", mode="w")
-    file_handler.setFormatter(formatter_file)
-    file_handler.setLevel(logging.DEBUG)
-
-    logger.addHandler(file_handler)
-    logger.addHandler(stream_handler)
-    config = _create_and_read_cfg(DEFAULT_CONFIG_FILE)
-
-    window = App(cfg=config)
-    window.title("Split To Wells")
-    # window.iconbitmap("microscope.ico")
-
-    logger.info("Starting SplitToWells")
-    window.mainloop()
-    return 0
+    app = App(config)
+    app.mainloop()
 
 
 if __name__ == "__main__":
-    EXIT_CODE = main()
-    sys.exit(EXIT_CODE)
+    main()
