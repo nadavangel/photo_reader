@@ -97,7 +97,7 @@ class App(ctk.CTk):
         self.minsize(700, 850)
 
         # Set icon if it exists
-        icon_path = Path("microscope.ico")
+        icon_path = Path("icons/microscope.ico")
         if icon_path.exists():
             try:
                 self.iconbitmap(str(icon_path))
@@ -222,8 +222,8 @@ class App(ctk.CTk):
         self.lbl_footer.grid(row=0, column=0, sticky="e")
 
         # GitHub Icon Link
-        github_dark = Path("github-mark-dark.png")
-        github_light = Path("github-mark-light.png")
+        github_dark = Path("icons/github-mark-dark.png")
+        github_light = Path("icons/github-mark-light.png")
 
         if github_dark.exists() and github_light.exists():
             github_image = ctk.CTkImage(light_image=Image.open(github_dark), dark_image=Image.open(github_light), size=(20, 20))
