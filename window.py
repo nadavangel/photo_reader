@@ -15,6 +15,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk  # type: ignore
+from PIL import Image
 
 from photo.utils import Microscope
 from photo.wells import WellNameTxt
@@ -203,7 +204,11 @@ class App(ctk.CTk):
         self.progressbar.set(0)
 
         self.btn_run = ctk.CTkButton(
-            self.control_frame, text="START PROCESSING", height=40, font=ctk.CTkFont(size=14, weight="bold"), command=self.run
+            self.control_frame,
+            text="START PROCESSING",
+            height=40,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            command=self.run,
         )
         self.btn_run.grid(row=0, column=1)
 
@@ -216,10 +221,23 @@ class App(ctk.CTk):
         self.lbl_footer = ctk.CTkLabel(self.footer_frame, text=footer_text, font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
         self.lbl_footer.grid(row=0, column=0, sticky="e")
 
-        # GitHub Link
-        self.lbl_github = ctk.CTkLabel(
-            self.footer_frame, text="GitHub", font=ctk.CTkFont(size=10, underline=True), text_color="#3498db", cursor="hand2"
-        )
+        # GitHub Icon Link
+        github_dark = Path("github-mark-dark.png")
+        github_light = Path("github-mark-light.png")
+
+        if github_dark.exists() and github_light.exists():
+            github_image = ctk.CTkImage(light_image=Image.open(github_dark), dark_image=Image.open(github_light), size=(20, 20))
+            self.lbl_github = ctk.CTkLabel(self.footer_frame, image=github_image, text="", cursor="hand2")
+        else:
+            # Fallback to text if icons are missing
+            self.lbl_github = ctk.CTkLabel(
+                self.footer_frame,
+                text="GitHub",
+                font=ctk.CTkFont(size=10, underline=True),
+                text_color="#3498db",
+                cursor="hand2",
+            )
+
         self.lbl_github.grid(row=0, column=1, padx=(10, 0), sticky="e")
         self.lbl_github.bind("<Button-1>", lambda e: webbrowser.open_new_tab(GITHUB_URL))
 
