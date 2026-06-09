@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 from photo.utils import Microscope
 
 

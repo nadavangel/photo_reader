@@ -1,4 +1,5 @@
 import pytest
+
 from photo.validators import validate_directory, validate_file
 
 

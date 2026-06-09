@@ -1,12 +1,31 @@
 import configparser
+import logging
 from unittest.mock import MagicMock, patch
 
 import customtkinter as ctk  # type: ignore
 
-from window import App, FolderSelect, main
+from window import App, FolderSelect, TextHandler, main
 
 # Set to Light mode for tests to avoid issues with some environments
 ctk.set_appearance_mode("Light")
+
+
+def test_text_handler():
+    textbox = MagicMock()
+    handler = TextHandler(textbox)
+    record = logging.LogRecord("name", logging.INFO, "path", 1, "msg", (), None)
+
+    # Mock after to call the function immediately
+    def mock_after(ms, func):
+        func()
+
+    textbox.after = mock_after
+    handler.emit(record)
+
+    textbox.configure.assert_any_call(state="normal")
+    textbox.insert.assert_called()
+    textbox.configure.assert_any_call(state="disabled")
+    textbox.see.assert_called_with("end")
 
 
 def test_folder_select():
@@ -14,22 +33,47 @@ def test_folder_select():
     fs = FolderSelect(root, "desc", "initial_path")
     assert fs.folder_path == "initial_path"
 
+    # Test browse with folder selected
     with patch("window.filedialog.askdirectory", return_value="new_path"):
         fs.browse()
         assert fs.folder_path == "new_path"
 
+    # Test browse with no folder selected (cancelling)
     with patch("window.filedialog.askdirectory", return_value=""):
         fs.browse()
-        assert fs.folder_path == "new_path"
+        assert fs.folder_path == "new_path"  # Should remain unchanged
+
     root.destroy()
 
 
 @patch("window.messagebox.showinfo")
 def test_app_methods(mock_info):
-    cfg = configparser.ConfigParser()
-    cfg.add_section("Settings")
+    # Test with icon path existing and successful load
+    with patch("window.Path.exists", return_value=True):
+        with patch("customtkinter.CTk.iconbitmap") as mock_icon:
+            cfg = configparser.ConfigParser()
+            app = App(cfg)
+            mock_icon.assert_called()
 
-    app = App(cfg)
+    # Test with icon path existing and load failure
+    with patch("window.Path.exists", return_value=True):
+        with patch("customtkinter.CTk.iconbitmap", side_effect=Exception("icon error")):
+            with patch("builtins.print") as mock_print:
+                cfg = configparser.ConfigParser()
+                App(cfg)
+                mock_print.assert_called()
+
+    # Test with icon path NOT existing
+    with patch("window.Path.exists", return_value=False):
+        cfg = configparser.ConfigParser()
+        App(cfg)
+
+    # Test with Settings missing in cfg
+    cfg_no_settings = configparser.ConfigParser()
+    app_no_settings = App(cfg_no_settings)
+    with patch("builtins.open", MagicMock()):
+        app_no_settings._save_configuration()
+        assert "Settings" in app_no_settings._cfg
 
     app.start_ui_run()
     app.stop_ui_run()
@@ -42,12 +86,16 @@ def test_app_methods(mock_info):
         # Simulate the 'after' callback
         mock_after.call_args[0][1]()
 
-    # Test _save_configuration
-    with patch("builtins.open", MagicMock()):
-        app._save_configuration()
-        assert "Settings" in app._cfg
+    # Test _save_configuration error path
+    with patch("builtins.open", side_effect=Exception("mock error")):
+        with patch("builtins.print") as mock_print:
+            app._save_configuration()
+            mock_print.assert_called()
 
-    app.destroy()
+    # Test on_closing
+    with patch.object(app, "destroy") as mock_destroy:
+        app.on_closing()
+        mock_destroy.assert_called()
 
 
 @patch("window.messagebox.showinfo")
@@ -97,6 +145,8 @@ def test_app_run(mock_error, mock_info, tmp_path):
 def test_main():
     with patch("window.App") as mock_app:
         with patch("configparser.ConfigParser.read"):
-            mock_app_instance = mock_app.return_value
-            assert main() is None or main() == 0
-            mock_app_instance.mainloop.assert_called()
+            with patch("window.FileHandler"):
+                with patch("logging.StreamHandler"):
+                    mock_app_instance = mock_app.return_value
+                    main()
+                    mock_app_instance.mainloop.assert_called()

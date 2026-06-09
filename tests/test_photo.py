@@ -1,5 +1,7 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from photo.photo import Photo, sanitize_path
 from photo.wells import WellPos
 

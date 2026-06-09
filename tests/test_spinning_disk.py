@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import MagicMock, patch
-from photo.spinning_disk import SpinningDisk
+
+import pytest
+
 from photo.microscopebase import MicroscopeException
+from photo.spinning_disk import SpinningDisk
 
 
 def test_spinning_disk_init_no_nd(tmp_path):
