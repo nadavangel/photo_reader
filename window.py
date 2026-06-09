@@ -215,19 +215,18 @@ class App(ctk.CTk):
         # 6. Footer Frame
         self.footer_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.footer_frame.grid(row=5, column=0, padx=20, pady=(0, 10), sticky="ew")
-
-        # Container to center the footer elements
-        self.footer_container = ctk.CTkFrame(self.footer_frame, fg_color="transparent")
-        self.footer_container.pack(expand=True)
+        self.footer_frame.grid_columnconfigure(0, weight=1)
+        self.footer_frame.grid_columnconfigure(1, weight=0)
 
         footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME}"
         self.lbl_footer = ctk.CTkLabel(
-            self.footer_container,
+            self.footer_frame,
             text=footer_text,
             font=ctk.CTkFont(size=10, slant="italic"),
             text_color="gray",
+            anchor="w",
         )
-        self.lbl_footer.pack(side="left", padx=(0, 10))
+        self.lbl_footer.grid(row=0, column=0, sticky="ew", padx=(0, 10))
 
         # GitHub Icon Link
         github_dark = Path("icons/github-mark-dark.png")
@@ -235,18 +234,18 @@ class App(ctk.CTk):
 
         if github_dark.exists() and github_light.exists():
             github_image = ctk.CTkImage(light_image=Image.open(github_dark), dark_image=Image.open(github_light), size=(20, 20))
-            self.lbl_github = ctk.CTkLabel(self.footer_container, image=github_image, text="", cursor="hand2")
+            self.lbl_github = ctk.CTkLabel(self.footer_frame, image=github_image, text="", cursor="hand2")
         else:
             # Fallback to text if icons are missing
             self.lbl_github = ctk.CTkLabel(
-                self.footer_container,
+                self.footer_frame,
                 text="GitHub",
                 font=ctk.CTkFont(size=10, underline=True),
                 text_color="#3498db",
                 cursor="hand2",
             )
 
-        self.lbl_github.pack(side="left")
+        self.lbl_github.grid(row=0, column=1, sticky="e")
         self.lbl_github.bind("<Button-1>", lambda e: webbrowser.open_new_tab(GITHUB_URL))
 
         # Setup Logging to Console
