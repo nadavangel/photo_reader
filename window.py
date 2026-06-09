@@ -218,7 +218,7 @@ class App(ctk.CTk):
         self.footer_frame.grid_columnconfigure(0, weight=1)
         self.footer_frame.grid_columnconfigure(1, weight=0)
 
-        footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME}"
+        footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME} "
         self.lbl_footer = ctk.CTkLabel(self.footer_frame, text=footer_text, font=ctk.CTkFont(size=10, slant="italic"), text_color="gray", anchor="e")
         self.lbl_footer.grid(row=0, column=0, sticky="ew", padx=(0, 20))
 
