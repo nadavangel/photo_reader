@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import logging
 import pathlib
 import sys
@@ -13,7 +14,7 @@ from photo.microscopebase import MicroscopeException, get_exception_location
 from photo.utils import Microscope
 from photo.wells import WellNameTxt
 
-APP_VERSION = "2.0.0"
+APP_VERSION = importlib.metadata.version("photo_reader")
 
 
 def get_folder_input(prompt: str) -> pathlib.Path:

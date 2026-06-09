@@ -1,7 +1,10 @@
-# Split To Wells v2.0.0
+# Split To Wells
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml)
+[![Ruff](https://github.com/nadavangel/photo_reader/actions/workflows/ruff.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/ruff.yml)
+[![Mypy](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/mypy.yml)
+[![Pylint](https://github.com/nadavangel/photo_reader/actions/workflows/pylint.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/pylint.yml)
 [![Coverage](https://codecov.io/gh/nadavangel/photo_reader/graph/badge.svg)](https://codecov.io/gh/nadavangel/photo_reader)
 
 A modern, high-performance Python application for splitting microscope images (Spinning-Disc, Eva, etc.) into individual well folders. Featuring a completely redesigned GUI and high-speed parallel processing.
@@ -35,7 +38,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable depen
 ### Graphical User Interface (GUI)
 Launch the modern interface:
 ```bash
-uv run python window.py
+uv run split-to-wells-gui
 ```
 *   **Source Folder:** Select where your microscope images are stored.
 *   **Destination Folder:** Choose where the organized output should go.
@@ -45,7 +48,7 @@ uv run python window.py
 ### Command Line Interface (CLI)
 Run for quick operations or scripting:
 ```bash
-uv run python split_to_wells.py [OPTIONS]
+uv run split-to-wells [OPTIONS]
 ```
 **Common Options:**
 - `-f, --folder PATH` - Source folder path.
