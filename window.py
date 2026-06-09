@@ -27,6 +27,20 @@ APP_VERSION = importlib.metadata.version("photo_reader")
 AUTHOR_NAME = "Nadav Angel"
 GITHUB_URL = "https://github.com/nadavangel/photo_reader"
 
+
+def get_resource_path(relative_path: str | Path) -> Path:
+    """
+    Get the absolute path to a resource, supporting both development and PyInstaller environments.
+    """
+    try:
+        # PyInstaller creates a temporary folder and stores its path in _MEIPASS
+        base_path = Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    except AttributeError:
+        base_path = Path(".")
+
+    return base_path / relative_path
+
+
 # Configure customtkinter
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -98,7 +112,7 @@ class App(ctk.CTk):
         self.minsize(700, 850)
 
         # Set icon if it exists
-        icon_path = Path("icons/microscope.ico")
+        icon_path = get_resource_path("icons/microscope.ico")
         if icon_path.exists():
             try:
                 self.iconbitmap(str(icon_path))
@@ -231,8 +245,8 @@ class App(ctk.CTk):
         self.lbl_footer.grid(row=0, column=0, sticky="ew", padx=(0, 20))
 
         # GitHub Icon Link
-        github_dark = Path("icons/github-mark-dark.png")
-        github_light = Path("icons/github-mark-light.png")
+        github_dark = get_resource_path("icons/github-mark-dark.png")
+        github_light = get_resource_path("icons/github-mark-light.png")
 
         if github_dark.exists() and github_light.exists():
             github_image = ctk.CTkImage(light_image=Image.open(github_dark), dark_image=Image.open(github_light), size=(20, 20))
