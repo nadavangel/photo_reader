@@ -1,9 +1,11 @@
-import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from photo.microscopebase import MicroscopeBase, MicroscopeException, get_exception_location
-from photo.wells import WellPos
 from photo.photo import Photo
+from photo.wells import WellPos
 
 
 class ConcreteMicroscope(MicroscopeBase):

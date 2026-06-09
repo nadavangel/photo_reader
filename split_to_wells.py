@@ -13,6 +13,8 @@ from photo.microscopebase import MicroscopeException, get_exception_location
 from photo.utils import Microscope
 from photo.wells import WellNameTxt
 
+APP_VERSION = "2.0.0"
+
 
 def get_folder_input(prompt: str) -> pathlib.Path:
     """
@@ -103,7 +105,7 @@ def main() -> int:
     Returns:
         0 if the process completes successfully, 1 otherwise.
     """
-    parser = argparse.ArgumentParser(description="Split microscope images into well folders.")
+    parser = argparse.ArgumentParser(description=f"Split To Wells v{APP_VERSION} - Split microscope images into well folders.")
     parser.add_argument("-f", "--folder", type=pathlib.Path, help="Source folder (plate/Spinning disc)")
     parser.add_argument("-d", "--dest", type=pathlib.Path, help="Destination folder")
     parser.add_argument("-n", "--name", type=str, default="", help="Name/prefix for the output")

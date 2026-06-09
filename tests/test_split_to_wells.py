@@ -1,7 +1,8 @@
 import pathlib
 from unittest.mock import patch
-from split_to_wells import get_folder_input, get_text_input, get_yes_no_input, main
+
 from photo.microscopebase import MicroscopeException
+from split_to_wells import get_folder_input, get_text_input, get_yes_no_input, main
 
 
 def test_get_folder_input(tmp_path):

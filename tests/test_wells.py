@@ -1,5 +1,6 @@
 import pytest
-from photo.wells import WellPos, WellName, WellNameTxt
+
+from photo.wells import WellName, WellNameTxt, WellPos
 
 
 def test_wellpos_init():
