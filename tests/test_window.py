@@ -1,14 +1,31 @@
 import configparser
 import logging
+import os
 import webbrowser
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import customtkinter as ctk  # type: ignore
 
-from window import App, FolderSelect, TextHandler, main
+from window import App, FolderSelect, TextHandler, get_resource_path, main
 
 # Set to Light mode for tests to avoid issues with some environments
 ctk.set_appearance_mode("Light")
+
+
+def test_get_resource_path(tmp_path):
+    # Test development environment (no _MEIPASS)
+    relative = "icons/test.png"
+    path = get_resource_path(relative)
+    assert path == Path(".") / relative
+
+    # Test PyInstaller environment
+    meipass = tmp_path / "_MEI123"
+    with patch.dict(os.environ, {}, clear=True):
+        # We need to simulate the attribute on sys for the test
+        with patch("sys._MEIPASS", str(meipass), create=True):
+            path = get_resource_path(relative)
+            assert path == meipass / relative
 
 
 def test_text_handler():

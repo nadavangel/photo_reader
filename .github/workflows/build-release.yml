@@ -22,7 +22,7 @@ jobs:
         run: uv python install 3.11
       
       - name: Build exe
-        run: uv run --group build pyinstaller --clean -F -i="microscope.ico" --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F -i="icons/microscope.ico" --add-data "icons;icons" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
@@ -47,7 +47,7 @@ jobs:
       - name: Build app
         run: |
           # Build the .app bundle using PyInstaller
-          uv run --group build pyinstaller --clean --windowed -i="microscope.ico" --name splitToWells window.py
+          uv run --group build pyinstaller --clean --windowed -i="icons/microscope.ico" --add-data "icons:icons" --name splitToWells window.py
           
           # Use 'ditto' instead of 'zip' to preserve critical bundle symlinks and permissions
           cd dist
@@ -74,7 +74,7 @@ jobs:
         run: uv python install 3.11
       
       - name: Build executable
-        run: uv run --group build pyinstaller --clean -F --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F --add-data "icons:icons" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
