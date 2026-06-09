@@ -22,7 +22,7 @@ jobs:
         run: uv python install 3.11
       
       - name: Build exe
-        run: uv run --group build pyinstaller --clean -F -i="icons/microscope.ico" --add-data "icons;icons" --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F --noconsole -i="icons/microscope.ico" --add-data "icons;icons" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
@@ -74,7 +74,7 @@ jobs:
         run: uv python install 3.11
       
       - name: Build executable
-        run: uv run --group build pyinstaller --clean -F --add-data "icons:icons" --name splitToWells window.py
+        run: uv run --group build pyinstaller --clean -F --noconsole --add-data "icons:icons" --name splitToWells window.py
       
       - name: Upload to release
         uses: softprops/action-gh-release@v3
