@@ -70,6 +70,49 @@ def test_microscopebase_move_typeerror(tmp_path):
         assert m.move(tmp_path) is None
 
 
+def test_microscopebase_move_unexpected_exception(tmp_path):
+    m = ConcreteMicroscope(tmp_path)
+    with patch.object(m, "_move", side_effect=Exception("unexpected error")):
+        assert m.move(tmp_path) is None
+
+
+def test_microscopebase_move_parallel(tmp_path):
+    src = tmp_path / "src"
+    src.mkdir()
+    dest = tmp_path / "dest"
+    dest.mkdir()
+
+    m = ConcreteMicroscope(src)
+    pos = WellPos(row="A", col=1, site=1)
+    photo = MagicMock(spec=Photo)
+    photo.path = MagicMock()
+    photo.path.name = "test.tif"
+    m._add_photo(pos, photo)
+
+    result = m.move(dest, threads=2)
+    assert result == (dest.absolute() / "out")
+    photo.copy.assert_called()
+
+
+def test_microscopebase_move_parallel_error(tmp_path):
+    src = tmp_path / "src"
+    src.mkdir()
+    dest = tmp_path / "dest"
+    dest.mkdir()
+
+    m = ConcreteMicroscope(src)
+    pos = WellPos(row="A", col=1, site=1)
+    photo = MagicMock(spec=Photo)
+    photo.path = MagicMock()
+    photo.path.name = "test.tif"
+    photo.copy.side_effect = Exception("parallel error")
+    m._add_photo(pos, photo)
+
+    with patch("photo.microscopebase.logger") as mock_logger:
+        m.move(dest, threads=2)
+        mock_logger.error.assert_called_with("Error copying file: parallel error")
+
+
 def test_microscopebase_move_not_a_folder(tmp_path):
     m = ConcreteMicroscope(tmp_path)
     file_path = tmp_path / "file.txt"

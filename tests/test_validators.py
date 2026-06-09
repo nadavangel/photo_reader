@@ -21,7 +21,7 @@ def test_validate_directory_not_path_type():
 
 def test_validate_directory_not_exists(tmp_path):
     d = tmp_path / "nonexistent"
-    with pytest.raises(TypeError, match="is not a dirctory"):
+    with pytest.raises(TypeError, match="is not a directory"):
         validate_directory(d)
 
 

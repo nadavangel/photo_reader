@@ -101,5 +101,5 @@ class WellNameTxt(WellName):
             line = raw_line.strip()
             if not line or line.count(self._delimiter) < 1:
                 continue
-            pos_srt, name = line.split(sep=self._delimiter, maxsplit=2)
-            self[pos_srt] = name
+            pos_str, name = line.split(sep=self._delimiter, maxsplit=2)
+            self[pos_str] = name

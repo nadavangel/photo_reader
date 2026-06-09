@@ -194,6 +194,14 @@ def test_app_run(mock_info, tmp_path):
     with patch("window.Microscope", side_effect=TypeError("error")):
         app.run()
 
+    # Test invalid thread count
+    app.ui.threads.ent_path.delete(0, tk.END)
+    app.ui.threads.ent_path.insert(0, "invalid")
+    with patch("window.Microscope"):
+        with patch("window.logger") as mock_log:
+            app.run()
+            mock_log.warning.assert_called_with("Invalid thread count 'invalid', defaulting to 1")
+
     app.destroy()
 
 
