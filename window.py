@@ -216,10 +216,11 @@ class App(ctk.CTk):
         self.footer_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.footer_frame.grid(row=5, column=0, padx=20, pady=(0, 10), sticky="ew")
         self.footer_frame.grid_columnconfigure(0, weight=1)
+        self.footer_frame.grid_columnconfigure(1, weight=0)
 
         footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME}"
         self.lbl_footer = ctk.CTkLabel(self.footer_frame, text=footer_text, font=ctk.CTkFont(size=10, slant="italic"), text_color="gray")
-        self.lbl_footer.grid(row=0, column=0, sticky="e")
+        self.lbl_footer.grid(row=0, column=0, sticky="e", padx=(0, 10))
 
         # GitHub Icon Link
         github_dark = Path("icons/github-mark-dark.png")
