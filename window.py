@@ -21,6 +21,8 @@ from photo.wells import WellNameTxt
 DEFAULT_CONFIG_FILE = ".config.ini"
 APP_NAME = "Split To Wells"
 APP_VERSION = "2.0.0"
+AUTHOR_NAME = "Nadav Angel"
+AUTHOR_EMAIL = "nadavagnel2@gmail.com"
 
 # Configure customtkinter
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -88,9 +90,9 @@ class App(ctk.CTk):
     def __init__(self, cfg: configparser.ConfigParser):
         super().__init__()
 
-        self.title(f"{APP_NAME} v{APP_VERSION}")
-        self.geometry("800x850")
-        self.minsize(700, 800)
+        self.title(APP_NAME)
+        self.geometry("800x880")
+        self.minsize(700, 850)
 
         # Set icon if it exists
         icon_path = Path("microscope.ico")
@@ -192,7 +194,7 @@ class App(ctk.CTk):
 
         # 5. Control Frame
         self.control_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.control_frame.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
+        self.control_frame.grid(row=4, column=0, padx=20, pady=(0, 10), sticky="ew")
         self.control_frame.grid_columnconfigure(0, weight=1)
 
         self.progressbar = ctk.CTkProgressBar(self.control_frame, mode="indeterminate", height=15)
@@ -203,6 +205,16 @@ class App(ctk.CTk):
             self.control_frame, text="START PROCESSING", height=40, font=ctk.CTkFont(size=14, weight="bold"), command=self.run
         )
         self.btn_run.grid(row=0, column=1)
+
+        # 6. Footer Frame
+        self.footer_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.footer_frame.grid(row=5, column=0, padx=20, pady=(0, 10), sticky="ew")
+        self.footer_frame.grid_columnconfigure(0, weight=1)
+
+        footer_text = f"Version {APP_VERSION} | Developed by {AUTHOR_NAME} ({AUTHOR_EMAIL})"
+        ctk.CTkLabel(self.footer_frame, text=footer_text, font=ctk.CTkFont(size=10, slant="italic"), text_color="gray").grid(
+            row=0, column=0, sticky="e"
+        )
 
         # Setup Logging to Console
         self.text_handler = TextHandler(self.console)
