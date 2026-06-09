@@ -1,4 +1,4 @@
-# Split To Wells v2.0.0
+# Split To Wells
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml/badge.svg)](https://github.com/nadavangel/photo_reader/actions/workflows/tests.yml)
