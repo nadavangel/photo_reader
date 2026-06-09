@@ -111,7 +111,7 @@ class SpinningDisk(MicroscopeBase):
                         batch[stage] = pos
             stage_dict[nd_file.stem] = batch
 
-        skiped_files = []
+        skipped_files = []
         for file in self._files_list:
             if not file.is_file():
                 continue
@@ -120,11 +120,11 @@ class SpinningDisk(MicroscopeBase):
             if suc:
                 if batch not in stage_dict:
                     logger.warning(f"Batch '{batch}' not found in nd files, skip '{file_name}'")
-                    skiped_files.append(file)
+                    skipped_files.append(file)
                     continue
                 if stage not in stage_dict[batch]:
                     logger.warning(f"Stage '{stage}' not found in nd files, skip '{file_name}'")
-                    skiped_files.append(file)
+                    skipped_files.append(file)
                     continue
 
                 pos = stage_dict[batch][stage]
@@ -132,7 +132,7 @@ class SpinningDisk(MicroscopeBase):
                 logger.debug(f"Matched photo {file} to position {pos}")
             else:
                 logger.warning(f"Failed to parse file name: {file_name}, skip it (check regex: '{SpinningDisk.regEx_file_name}')")
-                skiped_files.append(file)
-        if len(skiped_files) > 0:
-            logger.info(f"Skipped files: {skiped_files}")
-        return skiped_files
+                skipped_files.append(file)
+        if len(skipped_files) > 0:
+            logger.info(f"Skipped files: {skipped_files}")
+        return skipped_files

@@ -60,12 +60,12 @@ class Eva(MicroscopeBase):
         :return: A list of skipped files.
         """
         self._pos_photo = {}
-        skiped_files = []
+        skipped_files = []
         logger.info("Matching files to positions")
         for file in self._files_list:
             if not file.is_file():
                 logger.warning(f"Skipping non-file: {file}")
-                skiped_files.append(file)
+                skipped_files.append(file)
                 continue
             file_name = file.name.strip()
             suc, pos = self._parse_file_name(file_name, pos_names=pos_names)
@@ -74,6 +74,6 @@ class Eva(MicroscopeBase):
                 logger.debug(f"Matched file {file_name} to position {pos}")
             else:
                 logger.warning(f"Failed to match file: {file_name}")
-        if len(skiped_files) > 0:
-            logger.info(f"Skipped files: {skiped_files}")
-        return skiped_files
+        if len(skipped_files) > 0:
+            logger.info(f"Skipped files: {skipped_files}")
+        return skipped_files

@@ -21,7 +21,7 @@ def validate_directory(value: typing.Union[Path, str]) -> Path:
         raise TypeError("Path is not from type 'Path'")
 
     if not val.is_dir():
-        raise TypeError(f'Path "{str(val)}", is not a dirctory.')
+        raise TypeError(f'Path "{str(val)}", is not a directory.')
     return val
 
 
