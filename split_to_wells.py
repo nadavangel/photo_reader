@@ -120,6 +120,7 @@ def main() -> int:
         action="store_true",
         help="Do not create subdirectories for each position",
     )
+    parser.add_argument("-t", "--threads", type=int, default=1, help="Number of threads for parallel processing")
     parser.add_argument(
         "-v",
         "--verbose",

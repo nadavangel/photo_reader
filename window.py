@@ -217,6 +217,11 @@ class AppUI:
         self.file_prefix.grid(row=row)
         row += 1
 
+        self.threads = Input(master, "Threads")
+        self.threads.ent_path.insert(0, cfg.get("Settings", "threads", fallback="1"))
+        self.threads.grid(row=row)
+        row += 1
+
         self.btn_run = tk.Button(master, text="Run")  # command is set later
         self.btn_run.grid(row=row)
         row += 1
@@ -324,6 +329,12 @@ class App(tk.Tk):
             return
 
         self.start_run()
+        try:
+            threads = int(self.ui.threads.value)
+        except (ValueError, TypeError):
+            threads = 1
+            logger.warning(f"Invalid thread count '{self.ui.threads.value}', defaulting to 1")
+
         run_thread = threading.Thread(
             target=mic.move,
             kwargs={
@@ -332,6 +343,7 @@ class App(tk.Tk):
                 "create_dubdir": self.ui.create_subdir_value.get(),
                 "pos_names": well_name,
                 "file_prefix": file_prefix,
+                "threads": threads,
             },
         )
         run_thread.daemon = True
@@ -383,6 +395,7 @@ class App(tk.Tk):
         self._cfg["Settings"]["name"] = self.ui.name.value
         self._cfg["Settings"]["create_subdir"] = str(self.ui.create_subdir_value.get())  # Boolean value
         self._cfg["Settings"]["well_name"] = self.ui.material.value  # Multitext value
+        self._cfg["Settings"]["threads"] = self.ui.threads.value
 
         _save_cfg(DEFAULT_CONFIG_FILE, self._cfg)
 

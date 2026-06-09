@@ -7,6 +7,7 @@ import logging
 import sys
 import traceback
 import typing
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from photo.photo import Photo
@@ -97,6 +98,10 @@ class MicroscopeBase(abc.ABC):
             ex_file, ex_line = get_exception_location()
             logger.error(f"Type error occurred while moving files: {e} (at {ex_file}:{ex_line})")
             return None
+        except Exception as e:
+            ex_file, ex_line = get_exception_location()
+            logger.error(f"Unexpected error occurred while moving files: {e} (at {ex_file}:{ex_line})")
+            return None
 
     def _move(
         self,
@@ -105,6 +110,7 @@ class MicroscopeBase(abc.ABC):
         create_dubdir: bool = True,
         pos_names: typing.Optional[WellName] = None,
         file_prefix: str = "",
+        threads: int = 1,
     ):
         """
         Core logic for moving files to the destination.
@@ -114,6 +120,7 @@ class MicroscopeBase(abc.ABC):
         :param create_dubdir: Whether to create subdirectories for each position.
         :param pos_names: Optional well name mapping.
         :param file_prefix: Optional file prefix.
+        :param threads: Number of threads to use for file copying.
         :return: The destination directory path.
         """
         base_dest_dir = validate_directory(dest)
@@ -124,6 +131,7 @@ class MicroscopeBase(abc.ABC):
         logger.info(f"Create {str(dest_dir)}")
         skipped_files = self._match(pos_names)
 
+        copy_tasks = []
         for pos, photos in self._pos_photo.items():
             if create_dubdir:
                 pos_dir = dest_dir / str(pos)
@@ -135,11 +143,26 @@ class MicroscopeBase(abc.ABC):
                 pos_prefix = f"{str(pos)}_{prefix}"
 
             if file_prefix:
-                pos_prefix = f"{file_prefix}_{pos_prefix}"
+                current_prefix = f"{file_prefix}_{pos_prefix}"
+            else:
+                current_prefix = pos_prefix
 
             for photo in photos:
-                photo.copy(pos_dir, prefix=pos_prefix)
-                logger.info(f'Copy "{str(photo.path.name)}" to {str(pos)}')
+                copy_tasks.append((photo, pos_dir, current_prefix))
+
+        if threads > 1:
+            logger.info(f"Starting parallel copy with {threads} threads")
+            with ThreadPoolExecutor(max_workers=threads) as executor:
+                futures = [executor.submit(photo.copy, dest_dir, prefix=prefix) for photo, dest_dir, prefix in copy_tasks]
+                for future in as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        logger.error(f"Error copying file: {e}")
+        else:
+            for photo, pos_dir, current_prefix in copy_tasks:
+                photo.copy(pos_dir, prefix=current_prefix)
+                logger.info(f'Copy "{str(photo.path.name)}" to {str(pos_dir.name)}')
 
         if len(skipped_files) > 0:
             skipped_files_names = ", ".join([file.name for file in skipped_files])
