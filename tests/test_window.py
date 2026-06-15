@@ -128,6 +128,87 @@ def test_app_methods(mock_info):
 
 
 @patch("window.messagebox.showinfo")
+def test_app_shortcuts(mock_info):
+    with patch("window.ctk.CTkImage"), patch("window.ctk.CTkLabel"), patch("window.Image.open"):
+        cfg = configparser.ConfigParser()
+        app = App(cfg)
+
+        # Test Ctrl+R (Run)
+        with patch.object(app, "run") as mock_run:
+            event = MagicMock()
+            app._on_enter(event)  # Directly calling the handler for simplicity in test
+            mock_run.assert_called_once()
+
+        # Test Ctrl+A (Select All)
+        event = MagicMock()
+        mock_widget = MagicMock()
+        event.widget = mock_widget
+
+        # Case: Entry-like widget
+        mock_widget.select_range = MagicMock()
+        assert app._on_select_all(event) == "break"
+        mock_widget.select_range.assert_called_with(0, "end")
+
+        # Case: Text-like widget
+        del mock_widget.select_range
+        mock_widget.tag_add = MagicMock()
+        assert app._on_select_all(event) == "break"
+        mock_widget.tag_add.assert_called_with("sel", "1.0", "end")
+
+        # Case: Other widget
+        del mock_widget.tag_add
+        assert app._on_select_all(event) is None
+
+        # Test Edit Events (Copy, Paste, Cut)
+        event = MagicMock()
+        mock_widget = MagicMock()
+        event.widget = mock_widget
+        mock_widget.event_generate = MagicMock()
+
+        assert app._on_edit_event(event, "<<Paste>>") == "break"
+        mock_widget.event_generate.assert_called_with("<<Paste>>")
+
+        # Case: Widget without event_generate
+        del mock_widget.event_generate
+        assert app._on_edit_event(event, "<<Paste>>") is None
+
+        # Test Context Menu
+        with patch.object(app.context_menu, "tk_popup") as mock_popup:
+            event = MagicMock()
+            event.x_root, event.y_root = 100, 200
+            app._show_context_menu(event)
+            mock_popup.assert_called_with(100, 200)
+
+        # Test Trigger Select All
+        with patch.object(app, "focus_get", side_effect=[app.ent_name, None]):
+            with patch.object(app, "_on_select_all") as mock_osa:
+                # Case 1: Widget focused
+                app._trigger_select_all()
+                mock_osa.assert_called_once()
+                # Case 2: No widget focused
+                app._trigger_select_all()
+                assert mock_osa.call_count == 1  # Should not have been called again
+
+        # Test Recursive Binding (ensure it doesn't crash)
+        app._bind_context_menu(app)
+
+        # Test Enter behavior
+        with patch.object(app, "run") as mock_run:
+            event = MagicMock()
+            # Focus on material textbox - should NOT run
+            event.widget = app.txt_material
+            assert app._on_enter(event) is None
+            mock_run.assert_not_called()
+
+            # Focus on something else - should run
+            event.widget = app.ent_name
+            assert app._on_enter(event) == "break"
+            mock_run.assert_called_once()
+
+        app.destroy()
+
+
+@patch("window.messagebox.showinfo")
 @patch("window.messagebox.showerror")
 def test_app_run(mock_error, mock_info, tmp_path):
     # Mock CTkImage and CTkLabel globally for this test

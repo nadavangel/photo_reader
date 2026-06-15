@@ -14,6 +14,7 @@ import webbrowser
 from logging import FileHandler, Handler
 from pathlib import Path
 from tkinter import filedialog, messagebox
+from unittest.mock import MagicMock
 
 import customtkinter as ctk  # type: ignore
 from PIL import Image
@@ -268,6 +269,105 @@ class App(ctk.CTk):
         self.text_handler = TextHandler(self.console)
         self.text_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"))
         logger.addHandler(self.text_handler)
+
+        # Keyboard Shortcuts
+        self.bind_all("<Control-r>", lambda e: self.run())
+        self.bind_all("<Control-R>", lambda e: self.run())
+        self.bind_all("<Control-a>", self._on_select_all)
+        self.bind_all("<Control-A>", self._on_select_all)
+        self.bind_all("<Control-v>", lambda e: self._on_edit_event(e, "<<Paste>>"))
+        self.bind_all("<Control-V>", lambda e: self._on_edit_event(e, "<<Paste>>"))
+        self.bind_all("<Control-c>", lambda e: self._on_edit_event(e, "<<Copy>>"))
+        self.bind_all("<Control-C>", lambda e: self._on_edit_event(e, "<<Copy>>"))
+        self.bind_all("<Control-x>", lambda e: self._on_edit_event(e, "<<Cut>>"))
+        self.bind_all("<Control-X>", lambda e: self._on_edit_event(e, "<<Cut>>"))
+        self.bind_all("<Control-q>", lambda e: self.on_closing())
+        self.bind_all("<Control-w>", lambda e: self.on_closing())
+        self.bind_all("<Return>", self._on_enter)
+
+        # Right-Click Context Menu
+        self.context_menu = tk.Menu(self, tearoff=0)
+        self.context_menu.add_command(label="Cut", command=lambda: self.focus_get().event_generate("<<Cut>>"))
+        self.context_menu.add_command(label="Copy", command=lambda: self.focus_get().event_generate("<<Copy>>"))
+        self.context_menu.add_command(label="Paste", command=lambda: self.focus_get().event_generate("<<Paste>>"))
+        self.context_menu.add_separator()
+        self.context_menu.add_command(label="Select All", command=self._trigger_select_all)
+
+        self._bind_context_menu(self)
+
+    def _bind_context_menu(self, widget):
+        """
+        Recursively bind the right-click context menu to all entry and textbox widgets.
+        """
+        if isinstance(widget, (ctk.CTkEntry, ctk.CTkTextbox, tk.Entry, tk.Text)):
+            # On Linux, right click is <Button-3>, on Windows/macOS it's often <Button-2> or <Button-3>
+            # We bind to <Button-3> as a standard for Linux/Windows.
+            widget.bind("<Button-3>", self._show_context_menu)
+            # Also bind to the internal textbox/entry if it exists (CustomTkinter)
+            if hasattr(widget, "_entry"):
+                widget._entry.bind("<Button-3>", self._show_context_menu)
+            if hasattr(widget, "_textbox"):
+                widget._textbox.bind("<Button-3>", self._show_context_menu)
+
+        for child in widget.winfo_children():
+            self._bind_context_menu(child)
+
+    def _show_context_menu(self, event):
+        """
+        Display the context menu at the mouse pointer location.
+        """
+        try:
+            self.context_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self.context_menu.grab_release()
+
+    def _trigger_select_all(self):
+        """
+        Trigger Select All for the currently focused widget.
+        """
+        widget = self.focus_get()
+        if widget:
+            # We simulate an event to reuse the existing logic
+            event = MagicMock()
+            event.widget = widget
+            self._on_select_all(event)
+
+    def _on_edit_event(self, event, sequence):
+        """
+        Handle edit shortcuts (Copy, Paste, Cut) by generating the corresponding virtual event.
+        """
+        widget = event.widget
+        # Check if the widget supports event generation (standard for tk/ctk widgets)
+        if hasattr(widget, "event_generate"):
+            widget.event_generate(sequence)
+            return "break"
+        return None
+
+    def _on_select_all(self, event):
+        """
+        Handle Select All (Ctrl+A) for entry and textbox widgets.
+        """
+        widget = event.widget
+        if hasattr(widget, "select_range"):  # CTkEntry or tk.Entry
+            widget.select_range(0, "end")
+            widget.icursor("end")
+            return "break"
+        if hasattr(widget, "tag_add"):  # CTkTextbox or tk.Text
+            widget.tag_add("sel", "1.0", "end")
+            return "break"
+        return None
+
+    def _on_enter(self, event):
+        """
+        Handle Enter key to trigger the run process, unless focus is in a multi-line textbox.
+        """
+        # We check if the widget is the internal textbox of txt_material
+        # CustomTkinter widgets often pass their internal tk widgets to events
+        if event.widget == self.txt_material or (hasattr(self.txt_material, "_textbox") and event.widget == self.txt_material._textbox):
+            return None
+
+        self.run()
+        return "break"
 
     def run(self):
         src = self.src_folder.folder_path
