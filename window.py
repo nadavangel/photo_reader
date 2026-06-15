@@ -14,7 +14,6 @@ import webbrowser
 from logging import FileHandler, Handler
 from pathlib import Path
 from tkinter import filedialog, messagebox
-from unittest.mock import MagicMock
 
 import customtkinter as ctk  # type: ignore
 from PIL import Image
@@ -275,12 +274,6 @@ class App(ctk.CTk):
         self.bind_all("<Control-R>", lambda e: self.run())
         self.bind_all("<Control-a>", self._on_select_all)
         self.bind_all("<Control-A>", self._on_select_all)
-        self.bind_all("<Control-v>", lambda e: self._on_edit_event(e, "<<Paste>>"))
-        self.bind_all("<Control-V>", lambda e: self._on_edit_event(e, "<<Paste>>"))
-        self.bind_all("<Control-c>", lambda e: self._on_edit_event(e, "<<Copy>>"))
-        self.bind_all("<Control-C>", lambda e: self._on_edit_event(e, "<<Copy>>"))
-        self.bind_all("<Control-x>", lambda e: self._on_edit_event(e, "<<Cut>>"))
-        self.bind_all("<Control-X>", lambda e: self._on_edit_event(e, "<<Cut>>"))
         self.bind_all("<Control-q>", lambda e: self.on_closing())
         self.bind_all("<Control-w>", lambda e: self.on_closing())
         self.bind_all("<Return>", self._on_enter)
@@ -327,35 +320,24 @@ class App(ctk.CTk):
         """
         widget = self.focus_get()
         if widget:
-            # We simulate an event to reuse the existing logic
-            event = MagicMock()
-            event.widget = widget
-            self._on_select_all(event)
-
-    def _on_edit_event(self, event, sequence):
-        """
-        Handle edit shortcuts (Copy, Paste, Cut) by generating the corresponding virtual event.
-        """
-        widget = event.widget
-        # Check if the widget supports event generation (standard for tk/ctk widgets)
-        if hasattr(widget, "event_generate"):
-            widget.event_generate(sequence)
-            return "break"
-        return None
+            self._select_all_widget(widget)
 
     def _on_select_all(self, event):
         """
         Handle Select All (Ctrl+A) for entry and textbox widgets.
         """
-        widget = event.widget
+        self._select_all_widget(event.widget)
+        return "break"
+
+    def _select_all_widget(self, widget):
+        """
+        Helper to select all text in a widget.
+        """
         if hasattr(widget, "select_range"):  # CTkEntry or tk.Entry
             widget.select_range(0, "end")
             widget.icursor("end")
-            return "break"
-        if hasattr(widget, "tag_add"):  # CTkTextbox or tk.Text
+        elif hasattr(widget, "tag_add"):  # CTkTextbox or tk.Text
             widget.tag_add("sel", "1.0", "end")
-            return "break"
-        return None
 
     def _on_enter(self, event):
         """
