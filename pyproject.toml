@@ -48,6 +48,7 @@ dev = [
 ]
 build = [
     "pyinstaller>=6.21.0",
+    "setuptools-scm>=8.0",
 ]
 
 [tool.setuptools]
