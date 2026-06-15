@@ -6,16 +6,19 @@ repos:
       entry: uv run ruff check --fix --exit-non-zero-on-fix
       language: system
       types: [python]
+      exclude: photo/_version.py
     - id: ruff-format
       name: ruff-format
       entry: uv run ruff format
       language: system
       types: [python]
+      exclude: photo/_version.py
     - id: mypy
       name: mypy
       entry: uv run mypy
       language: system
       types: [python]
+      exclude: photo/_version.py
 - repo: local
   hooks:
     - id: pylint
@@ -23,4 +26,5 @@ repos:
       entry: uv run pylint
       language: system
       types: [python]
+      exclude: photo/_version.py
       args: [--rcfile=pyproject.toml]

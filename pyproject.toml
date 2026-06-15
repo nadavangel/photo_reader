@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "photo_reader"
-version = "2.0.0"
+dynamic = ["version"]
 description = "Modern GUI and CLI tool for splitting microscope images into well-organized folders."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -48,6 +48,7 @@ dev = [
 ]
 build = [
     "pyinstaller>=6.21.0",
+    "setuptools-scm>=8.0",
 ]
 
 [tool.setuptools]
@@ -56,6 +57,7 @@ py-modules = ["window", "split_to_wells"]
 
 [tool.ruff]
 line-length = 150
+exclude = ["photo/_version.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
@@ -101,6 +103,7 @@ pythonpath = "."
 [tool.coverage.run]
 branch = true
 source = ["photo", "window", "split_to_wells"]
+omit = ["photo/_version.py"]
 
 [tool.coverage.report]
 show_missing = true
@@ -111,3 +114,6 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "raise NotImplementedError",
 ]
+
+[tool.setuptools_scm]
+version_file = "photo/_version.py"

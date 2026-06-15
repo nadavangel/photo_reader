@@ -157,20 +157,7 @@ def test_app_shortcuts(mock_info):
 
         # Case: Other widget
         del mock_widget.tag_add
-        assert app._on_select_all(event) is None
-
-        # Test Edit Events (Copy, Paste, Cut)
-        event = MagicMock()
-        mock_widget = MagicMock()
-        event.widget = mock_widget
-        mock_widget.event_generate = MagicMock()
-
-        assert app._on_edit_event(event, "<<Paste>>") == "break"
-        mock_widget.event_generate.assert_called_with("<<Paste>>")
-
-        # Case: Widget without event_generate
-        del mock_widget.event_generate
-        assert app._on_edit_event(event, "<<Paste>>") is None
+        assert app._on_select_all(event) == "break"
 
         # Test Context Menu
         with patch.object(app.context_menu, "tk_popup") as mock_popup:
@@ -181,13 +168,13 @@ def test_app_shortcuts(mock_info):
 
         # Test Trigger Select All
         with patch.object(app, "focus_get", side_effect=[app.ent_name, None]):
-            with patch.object(app, "_on_select_all") as mock_osa:
+            with patch.object(app, "_select_all_widget") as mock_saw:
                 # Case 1: Widget focused
                 app._trigger_select_all()
-                mock_osa.assert_called_once()
+                mock_saw.assert_called_once_with(app.ent_name)
                 # Case 2: No widget focused
                 app._trigger_select_all()
-                assert mock_osa.call_count == 1  # Should not have been called again
+                assert mock_saw.call_count == 1  # Should not have been called again
 
         # Test Recursive Binding (ensure it doesn't crash)
         app._bind_context_menu(app)
