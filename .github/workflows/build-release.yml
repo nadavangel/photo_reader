@@ -24,7 +24,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Generate version file
-        run: uv run --group build python -c "from setuptools_scm import dump_version; dump_version('.', 'photo/_version.py')"
+        run: uv run --group build python -c "from setuptools_scm import dump_version; dump_version(write_to='photo/_version.py')"
       
       - name: Build exe
         run: uv run --group build pyinstaller --clean -F --noconsole -i="icons/microscope.ico" --add-data "icons;icons" --name splitToWells window.py
@@ -52,7 +52,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Generate version file
-        run: uv run --group build python -c "from setuptools_scm import dump_version; dump_version('.', 'photo/_version.py')"
+        run: uv run --group build python -c "from setuptools_scm import dump_version; dump_version(write_to='photo/_version.py')"
       
       - name: Build app
         run: |
@@ -86,7 +86,7 @@ jobs:
         run: uv python install 3.11
 
       - name: Generate version file
-        run: uv run --group build python -c "from setuptools_scm import dump_version; dump_version('.', 'photo/_version.py')"
+        run: uv run --group build python -c "from setuptools_scm import dump_version; dump_version(write_to='photo/_version.py')"
       
       - name: Build executable
         run: uv run --group build pyinstaller --clean -F --noconsole --add-data "icons:icons" --name splitToWells window.py
