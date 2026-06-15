@@ -172,6 +172,26 @@ def test_app_shortcuts(mock_info):
         del mock_widget.event_generate
         assert app._on_edit_event(event, "<<Paste>>") is None
 
+        # Test Context Menu
+        with patch.object(app.context_menu, "tk_popup") as mock_popup:
+            event = MagicMock()
+            event.x_root, event.y_root = 100, 200
+            app._show_context_menu(event)
+            mock_popup.assert_called_with(100, 200)
+
+        # Test Trigger Select All
+        with patch.object(app, "focus_get", side_effect=[app.ent_name, None]):
+            with patch.object(app, "_on_select_all") as mock_osa:
+                # Case 1: Widget focused
+                app._trigger_select_all()
+                mock_osa.assert_called_once()
+                # Case 2: No widget focused
+                app._trigger_select_all()
+                assert mock_osa.call_count == 1  # Should not have been called again
+
+        # Test Recursive Binding (ensure it doesn't crash)
+        app._bind_context_menu(app)
+
         # Test Enter behavior
         with patch.object(app, "run") as mock_run:
             event = MagicMock()

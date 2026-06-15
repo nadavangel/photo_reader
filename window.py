@@ -14,6 +14,7 @@ import webbrowser
 from logging import FileHandler, Handler
 from pathlib import Path
 from tkinter import filedialog, messagebox
+from unittest.mock import MagicMock
 
 import customtkinter as ctk  # type: ignore
 from PIL import Image
@@ -283,6 +284,53 @@ class App(ctk.CTk):
         self.bind_all("<Control-q>", lambda e: self.on_closing())
         self.bind_all("<Control-w>", lambda e: self.on_closing())
         self.bind_all("<Return>", self._on_enter)
+
+        # Right-Click Context Menu
+        self.context_menu = tk.Menu(self, tearoff=0)
+        self.context_menu.add_command(label="Cut", command=lambda: self.focus_get().event_generate("<<Cut>>"))
+        self.context_menu.add_command(label="Copy", command=lambda: self.focus_get().event_generate("<<Copy>>"))
+        self.context_menu.add_command(label="Paste", command=lambda: self.focus_get().event_generate("<<Paste>>"))
+        self.context_menu.add_separator()
+        self.context_menu.add_command(label="Select All", command=self._trigger_select_all)
+
+        self._bind_context_menu(self)
+
+    def _bind_context_menu(self, widget):
+        """
+        Recursively bind the right-click context menu to all entry and textbox widgets.
+        """
+        if isinstance(widget, (ctk.CTkEntry, ctk.CTkTextbox, tk.Entry, tk.Text)):
+            # On Linux, right click is <Button-3>, on Windows/macOS it's often <Button-2> or <Button-3>
+            # We bind to <Button-3> as a standard for Linux/Windows.
+            widget.bind("<Button-3>", self._show_context_menu)
+            # Also bind to the internal textbox/entry if it exists (CustomTkinter)
+            if hasattr(widget, "_entry"):
+                widget._entry.bind("<Button-3>", self._show_context_menu)
+            if hasattr(widget, "_textbox"):
+                widget._textbox.bind("<Button-3>", self._show_context_menu)
+
+        for child in widget.winfo_children():
+            self._bind_context_menu(child)
+
+    def _show_context_menu(self, event):
+        """
+        Display the context menu at the mouse pointer location.
+        """
+        try:
+            self.context_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self.context_menu.grab_release()
+
+    def _trigger_select_all(self):
+        """
+        Trigger Select All for the currently focused widget.
+        """
+        widget = self.focus_get()
+        if widget:
+            # We simulate an event to reuse the existing logic
+            event = MagicMock()
+            event.widget = widget
+            self._on_select_all(event)
 
     def _on_edit_event(self, event, sequence):
         """
