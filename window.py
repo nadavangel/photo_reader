@@ -269,6 +269,41 @@ class App(ctk.CTk):
         self.text_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"))
         logger.addHandler(self.text_handler)
 
+        # Keyboard Shortcuts
+        self.bind_all("<Control-r>", lambda e: self.run())
+        self.bind_all("<Control-R>", lambda e: self.run())
+        self.bind_all("<Control-a>", self._on_select_all)
+        self.bind_all("<Control-A>", self._on_select_all)
+        self.bind_all("<Control-q>", lambda e: self.on_closing())
+        self.bind_all("<Control-w>", lambda e: self.on_closing())
+        self.bind_all("<Return>", self._on_enter)
+
+    def _on_select_all(self, event):
+        """
+        Handle Select All (Ctrl+A) for entry and textbox widgets.
+        """
+        widget = event.widget
+        if hasattr(widget, "select_range"):  # CTkEntry or tk.Entry
+            widget.select_range(0, "end")
+            widget.icursor("end")
+            return "break"
+        if hasattr(widget, "tag_add"):  # CTkTextbox or tk.Text
+            widget.tag_add("sel", "1.0", "end")
+            return "break"
+        return None
+
+    def _on_enter(self, event):
+        """
+        Handle Enter key to trigger the run process, unless focus is in a multi-line textbox.
+        """
+        # We check if the widget is the internal textbox of txt_material
+        # CustomTkinter widgets often pass their internal tk widgets to events
+        if event.widget == self.txt_material or (hasattr(self.txt_material, "_textbox") and event.widget == self.txt_material._textbox):
+            return None
+
+        self.run()
+        return "break"
+
     def run(self):
         src = self.src_folder.folder_path
         dst = self.dest_folder.folder_path
