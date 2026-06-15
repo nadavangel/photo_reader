@@ -274,9 +274,26 @@ class App(ctk.CTk):
         self.bind_all("<Control-R>", lambda e: self.run())
         self.bind_all("<Control-a>", self._on_select_all)
         self.bind_all("<Control-A>", self._on_select_all)
+        self.bind_all("<Control-v>", lambda e: self._on_edit_event(e, "<<Paste>>"))
+        self.bind_all("<Control-V>", lambda e: self._on_edit_event(e, "<<Paste>>"))
+        self.bind_all("<Control-c>", lambda e: self._on_edit_event(e, "<<Copy>>"))
+        self.bind_all("<Control-C>", lambda e: self._on_edit_event(e, "<<Copy>>"))
+        self.bind_all("<Control-x>", lambda e: self._on_edit_event(e, "<<Cut>>"))
+        self.bind_all("<Control-X>", lambda e: self._on_edit_event(e, "<<Cut>>"))
         self.bind_all("<Control-q>", lambda e: self.on_closing())
         self.bind_all("<Control-w>", lambda e: self.on_closing())
         self.bind_all("<Return>", self._on_enter)
+
+    def _on_edit_event(self, event, sequence):
+        """
+        Handle edit shortcuts (Copy, Paste, Cut) by generating the corresponding virtual event.
+        """
+        widget = event.widget
+        # Check if the widget supports event generation (standard for tk/ctk widgets)
+        if hasattr(widget, "event_generate"):
+            widget.event_generate(sequence)
+            return "break"
+        return None
 
     def _on_select_all(self, event):
         """

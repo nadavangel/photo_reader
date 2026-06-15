@@ -159,6 +159,19 @@ def test_app_shortcuts(mock_info):
         del mock_widget.tag_add
         assert app._on_select_all(event) is None
 
+        # Test Edit Events (Copy, Paste, Cut)
+        event = MagicMock()
+        mock_widget = MagicMock()
+        event.widget = mock_widget
+        mock_widget.event_generate = MagicMock()
+
+        assert app._on_edit_event(event, "<<Paste>>") == "break"
+        mock_widget.event_generate.assert_called_with("<<Paste>>")
+
+        # Case: Widget without event_generate
+        del mock_widget.event_generate
+        assert app._on_edit_event(event, "<<Paste>>") is None
+
         # Test Enter behavior
         with patch.object(app, "run") as mock_run:
             event = MagicMock()
