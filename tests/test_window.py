@@ -64,6 +64,21 @@ def test_folder_select():
     root.destroy()
 
 
+def test_app_version_fallback():
+    # pylint: disable=import-outside-toplevel
+    import importlib
+
+    import window
+
+    # We need to mock the import of photo._version to raise ImportError
+    with patch.dict("sys.modules", {"photo._version": None}):
+        # Ensure importlib.metadata.version also fails if called
+        with patch("importlib.metadata.version", side_effect=importlib.metadata.PackageNotFoundError):
+            # Reload to trigger the import logic in window.py
+            importlib.reload(window)
+            assert window.APP_VERSION == "unknown"
+
+
 @patch("window.messagebox.showinfo")
 def test_app_methods(mock_info):
     # Mock CTkImage AND CTkLabel to avoid TclErrors and image processing

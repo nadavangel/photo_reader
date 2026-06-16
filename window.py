@@ -5,7 +5,6 @@ This module contains the modern GUI application for splitting photos into wells 
 from __future__ import annotations
 
 import configparser
-import importlib.metadata
 import logging
 import sys
 import threading
@@ -21,9 +20,13 @@ from PIL import Image
 from photo.utils import Microscope
 from photo.wells import WellNameTxt
 
+try:
+    from photo._version import version as APP_VERSION
+except ImportError:
+    APP_VERSION = "unknown"
+
 DEFAULT_CONFIG_FILE = ".config.ini"
 APP_NAME = "Split To Wells"
-APP_VERSION = importlib.metadata.version("photo_reader")
 AUTHOR_NAME = "Nadav Angel"
 GITHUB_URL = "https://github.com/nadavangel/photo_reader"
 
