@@ -173,3 +173,4 @@ cython_debug/
 gha-creds-*.json
 SplitToWells.log
 .config.ini
+photo/_version.py

@@ -23,7 +23,11 @@ from photo.wells import WellNameTxt
 
 DEFAULT_CONFIG_FILE = ".config.ini"
 APP_NAME = "Split To Wells"
-APP_VERSION = importlib.metadata.version("photo_reader")
+# Fallback for when version is not installed
+try:
+    APP_VERSION = importlib.metadata.version("photo_reader")
+except importlib.metadata.PackageNotFoundError:
+    APP_VERSION = "unknown"
 AUTHOR_NAME = "Nadav Angel"
 GITHUB_URL = "https://github.com/nadavangel/photo_reader"
 

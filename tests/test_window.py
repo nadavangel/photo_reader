@@ -1,4 +1,5 @@
 import configparser
+import importlib
 import logging
 import os
 import webbrowser
@@ -7,6 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import customtkinter as ctk  # type: ignore
 
+import window
 from window import App, FolderSelect, TextHandler, get_resource_path, main
 
 # Set to Light mode for tests to avoid issues with some environments
@@ -62,6 +64,13 @@ def test_folder_select():
         assert fs.folder_path == "new_path"  # Should remain unchanged
 
     root.destroy()
+
+
+def test_app_version_fallback():
+    with patch("importlib.metadata.version", side_effect=importlib.metadata.PackageNotFoundError):
+        # Reload window module to trigger the try/except block
+        importlib.reload(window)
+        assert window.APP_VERSION == "unknown"
 
 
 @patch("window.messagebox.showinfo")
