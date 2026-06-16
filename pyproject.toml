@@ -116,4 +116,4 @@ exclude_lines = [
 ]
 
 [tool.setuptools_scm]
-# No static version file to avoid dirty git state
+version_file = "photo/_version.py"
