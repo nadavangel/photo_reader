@@ -22,12 +22,9 @@ jobs:
 
       - name: Set up Python
         run: uv python install 3.11
-<<<<<<< HEAD
 
       - name: Generate version file
         run: uv run --group build python -m setuptools_scm --force-write-version-files
-=======
->>>>>>> fix/ci-versioning-cli
       
       - name: Build exe
         run: uv run --group build pyinstaller --clean -F --noconsole -i="icons/microscope.ico" --add-data "icons;icons" --name splitToWells window.py
@@ -53,12 +50,9 @@ jobs:
 
       - name: Set up Python
         run: uv python install 3.11
-<<<<<<< HEAD
 
       - name: Generate version file
         run: uv run --group build python -m setuptools_scm --force-write-version-files
-=======
->>>>>>> fix/ci-versioning-cli
       
       - name: Build app
         run: |
@@ -90,12 +84,9 @@ jobs:
 
       - name: Set up Python
         run: uv python install 3.11
-<<<<<<< HEAD
 
       - name: Generate version file
         run: uv run --group build python -m setuptools_scm --force-write-version-files
-=======
->>>>>>> fix/ci-versioning-cli
       
       - name: Build executable
         run: uv run --group build pyinstaller --clean -F --noconsole --add-data "icons:icons" --name splitToWells window.py
